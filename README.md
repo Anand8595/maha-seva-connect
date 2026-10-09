@@ -1,7 +1,7 @@
 # 🇮🇳 YojanaDut (योजना दूत पोर्टल)
 ### Online Citizen Services & Government Document Assistance Portal with Referral/Agent ("Yojana Dut") Program
 
-> **Primary Language:** Marathi (मराठी) with English bilingual support  
+> **Primary Language:** Marathi (मराठी) with English bilingual support.
 > **Color Theme:** Deep Forest Green (`#064E3B` / `#0F5132`), Warm Orange/Saffron (`#EA580C` / `#F97316`), and Soft Cream (`#FAF9F6`)
 
 ---
