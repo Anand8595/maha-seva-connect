@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="mr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YojanaDut Admin Portal - प्रशासक नियंत्रण कक्ष</title>
+    
+    <!-- Google Fonts: Noto Sans Devanagari, Outfit, Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              forest: {
+                50: '#f0fdf4',
+                100: '#dcfce7',
+                200: '#bbf7d0',
+                700: '#0f5132',
+                800: '#065f46',
+                900: '#064e3b',
+                950: '#022c22',
+              },
+              saffron: {
+                50: '#fff7ed',
+                100: '#ffedd5',
+                200: '#fed7aa',
+                500: '#f97316',
+                600: '#ea580c',
+                700: '#c2410c',
+              },
+              cream: {
+                50: '#ffffff',
+                100: '#faf9f6',
+                200: '#f5f2eb',
+                300: '#ebe6db',
+              }
+            },
+            fontFamily: {
+              sans: ['"Noto Sans Devanagari"', 'Inter', 'Outfit', 'sans-serif'],
+              outfit: ['Outfit', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body class="bg-[#FAF9F6] text-stone-800 antialiased font-sans">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
