@@ -1,9 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, ArrowRight, CheckCircle2, MessageSquare } from '../common/Icons';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
+import { api } from '../../services/api';
 
 export const HeroSection = ({ onOpenApplyModal, onOpenAgentModal }) => {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const [walletData, setWalletData] = useState(null);
+
+  useEffect(() => {
+    if (!user) {
+      setWalletData(null);
+      return;
+    }
+    const fetchWallet = async () => {
+      try {
+        const res = await api.getWalletOverview();
+        if (res && res.data) {
+          setWalletData(res.data);
+        }
+      } catch (e) {}
+    };
+    fetchWallet();
+
+    const handleStorage = (e) => {
+      if (e.key === 'yojanadut_user') {
+        fetchWallet();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [user?._id, user?.id, user?.phone, user?.walletBalance, user?.totalEarned]);
+
+  const earnedAmount = user
+    ? (walletData?.clearedTotal !== undefined ? walletData.clearedTotal : (user.totalEarned !== undefined ? user.totalEarned : (user.walletBalance || 0)))
+    : 0;
 
   return (
     <section className="px-4 sm:px-6 lg:px-8 pt-4 pb-8">
@@ -95,14 +127,23 @@ export const HeroSection = ({ onOpenApplyModal, onOpenAgentModal }) => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
                 </div>
 
-                {/* Floating Referral Earnings Card Overlay (Exact match to screenshot!) */}
-                <div className="absolute -bottom-4 left-4 sm:left-6 bg-white text-stone-800 rounded-xl px-4 py-3 shadow-xl border border-stone-100 flex flex-col items-start animate-float">
+                {/* Floating Referral Earnings Card Overlay (Dynamic Live Amount) */}
+                <div
+                  onClick={onOpenAgentModal}
+                  className="absolute -bottom-4 left-4 sm:left-6 bg-white text-stone-800 rounded-xl px-4 py-3 shadow-xl border border-stone-100 flex flex-col items-start animate-float cursor-pointer hover:shadow-2xl hover:scale-105 transition-all"
+                  title="रेफरल कमाई व वॉलेट तपशील पहा"
+                >
                   <span className="text-[11px] font-medium text-stone-500">
                     {t('या महिन्याची रेफरल कमाई', "This Month's Referral Earnings")}
                   </span>
                   <span className="text-xl sm:text-2xl font-extrabold text-[#064E3B] tracking-tight">
-                    ₹1,890
+                    ₹{Number(earnedAmount).toLocaleString('en-IN')}
                   </span>
+                  {user?.name && (
+                    <span className="text-[9px] font-semibold text-emerald-700 mt-0.5">
+                      ✓ {user.name} ({user.referralCode || (user.phone ? `YD-${user.phone.slice(-4)}` : 'YD-AGENT')})
+                    </span>
+                  )}
                 </div>
 
               </div>

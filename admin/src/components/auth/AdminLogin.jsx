@@ -3,18 +3,12 @@ import { adminApi } from '../../services/api';
 import { ShieldCheck, Lock, Key, User, Eye, CheckCircle2, AlertCircle } from '../common/Icons';
 
 export const AdminLogin = ({ onLoginSuccess }) => {
-  const [username, setUsername] = useState('admin@yojanadut.in');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const handleFillDemo = () => {
-    setUsername('admin@yojanadut.in');
-    setPassword('admin123');
-    setError('');
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -109,7 +103,7 @@ export const AdminLogin = ({ onLoginSuccess }) => {
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="admin@yojanadut.in"
+                    placeholder="sanviinfotechcsc@gmail.com किंवा 9579224223"
                     className="w-full pl-10 pr-3.5 py-2.5 bg-slate-950/80 border border-slate-800 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 rounded-xl text-sm text-white placeholder-slate-600 transition-all outline-none"
                   />
                 </div>
@@ -142,7 +136,7 @@ export const AdminLogin = ({ onLoginSuccess }) => {
                 </div>
               </div>
 
-              {/* Remember Me & Quick Help */}
+              {/* Remember Me */}
               <div className="flex items-center justify-between text-xs pt-1">
                 <label className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-200">
                   <input
@@ -153,13 +147,6 @@ export const AdminLogin = ({ onLoginSuccess }) => {
                   />
                   <span>सत्र लक्षात ठेवा (Remember)</span>
                 </label>
-                <button
-                  type="button"
-                  onClick={handleFillDemo}
-                  className="text-amber-400 hover:text-amber-300 font-medium underline underline-offset-4 decoration-amber-500/40"
-                >
-                  १-क्लिक डेमो भरा
-                </button>
               </div>
 
               {/* Submit Button */}
@@ -181,31 +168,6 @@ export const AdminLogin = ({ onLoginSuccess }) => {
                 )}
               </button>
             </form>
-
-            {/* Quick Demo Credentials Info Box */}
-            <div className="mt-6 pt-5 border-t border-slate-800/80">
-              <div className="bg-slate-950/60 rounded-xl p-3 border border-slate-800 text-[11px] text-slate-400 flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-slate-300 font-medium">
-                  <span className="flex items-center gap-1.5 text-amber-400">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    डेमो क्रेडेंशियल्स (Instant Access):
-                  </span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
-                    Test Mode
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-slate-300 pt-1 font-mono text-[10px]">
-                  <div>
-                    <span className="text-slate-500 block">आयडी:</span>
-                    <code className="text-amber-300">admin@yojanadut.in</code>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block">पासवर्ड:</span>
-                    <code className="text-amber-300">admin123</code>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Security Disclaimer footer under card */}

@@ -4,6 +4,9 @@ import { useLanguage } from '../../context/LanguageContext';
 
 export const Footer = ({ onNavigate }) => {
   const { t } = useLanguage();
+  const contactPhone = import.meta.env.VITE_CONTACT_PHONE || '9579224223';
+  const contactEmail = import.meta.env.VITE_CONTACT_EMAIL || 'sanviinfotechcsc@gmail.com';
+  const whatsappUrl = import.meta.env.VITE_WHATSAPP_LINK || 'https://chat.whatsapp.com/CPGUrVqOf2I4ZzsvBivj6e?s=sw&p=a&mlu=4&ilr=4';
 
   return (
     <footer className="bg-[#064E3B] text-emerald-100 border-t border-emerald-800/60 mt-16 text-left">
@@ -78,7 +81,9 @@ export const Footer = ({ onNavigate }) => {
               {t('संपर्क व मदत', 'Contact & Help')}
             </h4>
             <p className="text-xs text-emerald-200/90 leading-relaxed">
-              📞 {t('हेल्पलाईन: +९१ ९८२२० १२३४५', 'Helpline: +91 98220 12345')}<br />
+              📞 {t(`हेल्पलाईन: +९१ ${contactPhone}`, `Helpline: +91 ${contactPhone}`)}<br />
+              ✉️ {t(`ईमेल: ${contactEmail}`, `Email: ${contactEmail}`)}<br />
+              💬 <a href={whatsappUrl} target="_blank" rel="noreferrer" className="underline hover:text-white font-bold">{t('WhatsApp ग्रुप जॉइन करा', 'Join WhatsApp Group')}</a><br />
               ⏰ {t('वेळ: सकाळी ९:०० ते संध्या. ७:०० (सोम-शनि)', 'Hours: 9:00 AM - 7:00 PM (Mon-Sat)')}<br />
               📍 {t('कार्यालय: पुणे, महाराष्ट्र', 'Office: Pune, Maharashtra')}
             </p>

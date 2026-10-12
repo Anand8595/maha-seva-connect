@@ -27,8 +27,8 @@ export const initMemoryStore = async () => {
   const adminUser = {
     _id: 'usr_admin_001',
     name: 'प्रशासक (Admin)',
-    phone: '9876543210',
-    email: 'admin@yojanadut.in',
+    phone: '9579224223',
+    email: 'sanviinfotechcsc@gmail.com',
     password: hashedAdminPassword,
     role: 'admin',
     referralCode: 'YD-ADMIN01',
@@ -295,64 +295,10 @@ export const initMemoryStore = async () => {
     updatedAt: new Date('2026-09-29T15:20:00'),
   };
 
-  memoryStore.applications = [app1, app2, app3, app4, app5];
+  memoryStore.applications = [];
 
-  // Seed transactions for Agent Rahul Shinde
-  memoryStore.walletTransactions = [
-    {
-      _id: 'tx_001',
-      agentId: 'usr_agent_rahul',
-      applicationId: 'app_24077',
-      applicationNumber: 'YD-24077',
-      applicantName: 'गणेश जाधव',
-      serviceTitle: 'पॅन कार्ड (नवीन / दुरुस्ती)',
-      amount: 40,
-      type: 'credit',
-      status: 'cleared',
-      descriptionMarathi: 'पॅन कार्ड अर्ज यशस्वी पूर्ण झाल्याबद्दल कमिशन',
-      createdAt: new Date('2026-10-05T17:15:00'),
-    },
-    {
-      _id: 'tx_002',
-      agentId: 'usr_agent_rahul',
-      applicationId: 'app_24081',
-      applicationNumber: 'YD-24081',
-      applicantName: 'सुनीता पाटील',
-      serviceTitle: 'उत्पन्न दाखला',
-      amount: 30,
-      type: 'credit',
-      status: 'pending',
-      descriptionMarathi: 'उत्पन्न दाखला अर्ज प्रक्रियेत - अंतिम मंजुरीवर जमा होईल',
-      createdAt: new Date('2026-10-06T10:30:00'),
-    },
-    {
-      _id: 'tx_003',
-      agentId: 'usr_agent_rahul',
-      applicationId: null,
-      applicationNumber: '',
-      applicantName: '',
-      serviceTitle: 'बँक ट्रान्सफर विड्रॉल',
-      amount: 500,
-      type: 'withdrawal',
-      status: 'cleared',
-      descriptionMarathi: 'UPI खात्यात वर्ग केले (rahul@upi)',
-      payoutDetails: { payoutMethod: 'upi', upiId: 'rahulshinde@okaxis', holderName: 'राहुल शिंदे' },
-      createdAt: new Date('2026-09-28T14:00:00'),
-    },
-    {
-      _id: 'tx_004',
-      agentId: 'usr_agent_rahul',
-      applicationId: 'app_past_01',
-      applicationNumber: 'YD-23910',
-      applicantName: 'महेश बोरसे',
-      serviceTitle: 'डिजिटल ७/१२ उतारा',
-      amount: 15,
-      type: 'credit',
-      status: 'cleared',
-      descriptionMarathi: '७/१२ उतारा डाउनलोड पूर्ण',
-      createdAt: new Date('2026-09-25T11:20:00'),
-    },
-  ];
+  // Transactions start empty - no dummy mock data
+  memoryStore.walletTransactions = [];
 
   // Seed Notices
   memoryStore.notices = initialNotices.map((n, idx) => ({

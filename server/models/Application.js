@@ -47,6 +47,17 @@ const applicationSchema = new mongoose.Schema(
         rejectionReason: { type: String, default: '' },
       },
     ],
+    issuedDocs: [
+      {
+        name: { type: String, required: true },
+        url: { type: String, required: true },
+        size: { type: String, default: '' },
+        type: { type: String, default: 'application/pdf' },
+        issuedAt: { type: Date, default: Date.now },
+        issuedBy: { type: String, default: 'प्रशासक (Admin)' },
+        note: { type: String, default: '' },
+      },
+    ],
     // 1: अर्ज प्राप्त (Received), 2: तपासणी (Verification), 3: कागदपत्रे (Doc Review), 4: प्रक्रियेत (In Process), 5: पूर्ण (Completed)
     currentStage: {
       type: Number,

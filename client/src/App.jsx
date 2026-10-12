@@ -57,6 +57,16 @@ function MainApp() {
         const catParam = url.searchParams.get('cat');
 
         if (path.includes('/services') || catParam) {
+          const parts = path.split('/services/');
+          const slug = parts[1]?.replace(/^\/+|\/+$/g, '');
+          if (slug) {
+            const found = services.find((s) => s.slug === slug || s._id === slug);
+            if (found) {
+              setSelectedService(found);
+              setCurrentTab('service-detail');
+              return;
+            }
+          }
           setCurrentTab('services');
           if (catParam) {
             setSelectedCategory(catParam);
@@ -136,11 +146,8 @@ function MainApp() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleWhatsAppQuery = (service) => {
-    const text = encodeURIComponent(
-      `नमस्कार! मला ${service.marathiTitle} (${service.title}) सेवेबद्दल अधिक माहिती हवी आहे.`
-    );
-    window.open(`https://api.whatsapp.com/send?phone=919822012345&text=${text}`, '_blank');
+  const handleWhatsAppQuery = () => {
+    window.open('https://chat.whatsapp.com/CPGUrVqOf2I4ZzsvBivj6e?s=sw&p=a&mlu=4&ilr=4', '_blank');
   };
 
   return (
@@ -183,8 +190,7 @@ function MainApp() {
 
             <NoticesAndHelpWidget
               onOpenWhatsApp={() => {
-                const text = encodeURIComponent('नमस्कार! मला शासकीय कागदपत्रे सेवेबद्दल मदत हवी आहे.');
-                window.open(`https://api.whatsapp.com/send?phone=919822012345&text=${text}`, '_blank');
+                window.open('https://chat.whatsapp.com/CPGUrVqOf2I4ZzsvBivj6e?s=sw&p=a&mlu=4&ilr=4', '_blank');
               }}
             />
           </div>
@@ -233,8 +239,7 @@ function MainApp() {
             <p className="text-sm text-stone-500 mb-6">{t('महत्त्वाचे जीआर, योजना आणि शेवटच्या मुदतीची माहिती', 'Important GRs, scheme updates, and deadlines')}</p>
             <NoticesAndHelpWidget
               onOpenWhatsApp={() => {
-                const text = encodeURIComponent('नमस्कार! मला ताज्या योजनांबद्दल माहिती हवी आहे.');
-                window.open(`https://api.whatsapp.com/send?phone=919822012345&text=${text}`, '_blank');
+                window.open('https://chat.whatsapp.com/CPGUrVqOf2I4ZzsvBivj6e?s=sw&p=a&mlu=4&ilr=4', '_blank');
               }}
             />
           </div>
@@ -251,16 +256,16 @@ function MainApp() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100">
-                  <span className="text-xs text-emerald-800 font-bold block mb-1">WhatsApp त्वरित मदत:</span>
-                  <a href="https://api.whatsapp.com/send?phone=919822012345" target="_blank" rel="noreferrer" className="text-base font-extrabold text-[#064E3B] hover:underline">
-                    +९१ ९८२२० १२३४५
+                  <span className="text-xs text-emerald-800 font-bold block mb-1">WhatsApp ग्रुप / सपोर्ट:</span>
+                  <a href={import.meta.env.VITE_WHATSAPP_LINK || 'https://chat.whatsapp.com/CPGUrVqOf2I4ZzsvBivj6e?s=sw&p=a&mlu=4&ilr=4'} target="_blank" rel="noreferrer" className="text-base font-extrabold text-[#064E3B] hover:underline">
+                    ग्रुप जॉइन करा (+९१ {import.meta.env.VITE_CONTACT_PHONE || '9579224223'})
                   </a>
-                  <p className="text-[11px] text-stone-500 mt-1">सकाळी ९ ते संध्या. ७</p>
+                  <p className="text-[11px] text-stone-500 mt-1">मोबाईल: +91 {import.meta.env.VITE_CONTACT_PHONE || '9579224223'}</p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200">
                   <span className="text-xs text-stone-500 font-bold block mb-1">ईमेल सपोर्ट:</span>
-                  <span className="text-base font-bold text-stone-900">support@yojanadut.in</span>
+                  <a href={`mailto:${import.meta.env.VITE_CONTACT_EMAIL || 'sanviinfotechcsc@gmail.com'}`} className="text-base font-bold text-stone-900 hover:text-emerald-700">{import.meta.env.VITE_CONTACT_EMAIL || 'sanviinfotechcsc@gmail.com'}</a>
                   <p className="text-[11px] text-stone-400 mt-1">२४ तासांत उत्तर</p>
                 </div>
               </div>

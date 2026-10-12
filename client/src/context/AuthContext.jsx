@@ -4,33 +4,43 @@ import { api } from '../services/api';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Default demo agent logged in for instant testing matching screenshot (राहुल शिंदे)
-  const defaultAgent = {
-    id: 'usr_agent_rahul',
-    name: 'राहुल शिंदे',
-    englishName: 'Rahul Shinde',
-    phone: '9822012345',
-    email: 'rahul.shinde@yojanadut.in',
-    role: 'agent',
-    referralCode: 'YD-RAHUL100',
-    walletBalance: 455,
-    pendingBalance: 50,
-    totalEarned: 1240,
-  };
-
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('yojanadut_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Clear any previously saved dummy user
+        if (
+          parsed?.id === 'usr_agent_rahul' ||
+          parsed?.id === 'usr_citizen' ||
+          parsed?.phone === '9822012345' ||
+          parsed?.referralCode === 'YD-RAHUL100'
+        ) {
+          localStorage.removeItem('yojanadut_user');
+          localStorage.removeItem('yojanadut_token');
+          return null;
+        }
+        return parsed;
       } catch {
-        return defaultAgent;
+        return null;
       }
     }
-    return defaultAgent;
+    return null;
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem('yojanadut_token') || 'demo_token');
+  const [token, setToken] = useState(() => {
+    const savedToken = localStorage.getItem('yojanadut_token');
+    if (
+      savedToken === 'demo_token' ||
+      savedToken === 'mock_jwt_token_123' ||
+      savedToken === 'demo_agent_token' ||
+      savedToken === 'demo_user_token'
+    ) {
+      localStorage.removeItem('yojanadut_token');
+      return null;
+    }
+    return savedToken || null;
+  });
 
   useEffect(() => {
     if (user) {
@@ -45,46 +55,19 @@ export const AuthProvider = ({ children }) => {
     if (res.success && res.user) {
       setUser(res.user);
       setToken(res.token);
-      return { success: true };
+      return { success: true, user: res.user, message: res.message };
     }
     return { success: false, message: res.message || 'लॉगिन अयशस्वी.' };
   };
 
-  const quickDemoLogin = (role = 'agent') => {
-    if (role === 'admin') {
-      const admin = {
-        id: 'usr_admin',
-        name: 'प्रशासक (Admin)',
-        englishName: 'YojanaDut Admin',
-        phone: '9876543210',
-        email: 'admin@yojanadut.in',
-        role: 'admin',
-        referralCode: 'YD-ADMIN01',
-        walletBalance: 0,
-        pendingBalance: 0,
-        totalEarned: 0,
-      };
-      setUser(admin);
-      setToken('demo_admin_token');
-    } else if (role === 'agent') {
-      setUser(defaultAgent);
-      setToken('demo_agent_token');
-    } else {
-      const citizen = {
-        id: 'usr_citizen',
-        name: 'सुनीता पाटील',
-        englishName: 'Sunita Patil',
-        phone: '9850123456',
-        email: 'sunita.patil@gmail.com',
-        role: 'user',
-        referralCode: '',
-        walletBalance: 0,
-        pendingBalance: 0,
-        totalEarned: 0,
-      };
-      setUser(citizen);
-      setToken('demo_user_token');
+  const register = async (userData) => {
+    const res = await api.register(userData);
+    if (res.success && res.user) {
+      setUser(res.user);
+      setToken(res.token);
+      return { success: true, user: res.user, message: res.message };
     }
+    return { success: false, message: res.message || 'नोंदणी अयशस्वी झाली.' };
   };
 
   const sendOtp = async (phone, role = 'user') => {
@@ -109,7 +92,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateUser = (updates) => {
-    setUser((prev) => ({ ...prev, ...updates }));
+    setUser((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
   return (
@@ -119,10 +102,10 @@ export const AuthProvider = ({ children }) => {
         token,
         isAuthenticated: !!user,
         login,
+        register,
         sendOtp,
         verifyOtp,
         logout,
-        quickDemoLogin,
         updateUser,
       }}
     >

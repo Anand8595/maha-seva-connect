@@ -4,17 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const Navbar = ({ currentTab, setCurrentTab, onOpenApplyModal, onOpenAuthModal }) => {
-  const { user, isAuthenticated, logout, quickDemoLogin } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { lang, switchLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
-  const notifications = [
-    { id: 1, title: 'अर्ज क्र. YD-24081 अपडेट', desc: 'कागदपत्रे तपासणी पूर्ण झाली आहे.', time: '१० मि. पूर्वी', read: false },
-    { id: 2, title: 'दिवाळी रेफरल ऑफर!', desc: 'प्रत्येक ३ अर्जांवर ₹१०० अतिरिक्त कमिशन मिळवा.', time: '२ तासांपूर्वी', read: false },
-    { id: 3, title: 'विड्रॉल जमा झाले', desc: 'तुमच्या खात्यात ₹५०० यशस्वी वर्ग झाले.', time: 'काल', read: true },
-  ];
+  const notifications = [];
 
   const navItems = [
     { id: 'services', label: t('सेवा', 'Services') },
@@ -125,7 +121,9 @@ export const Navbar = ({ currentTab, setCurrentTab, onOpenApplyModal, onOpenAuth
                 aria-label="Notifications"
               >
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#EA580C] rounded-full ring-2 ring-[#FAF9F6]"></span>
+                {notifications.length > 0 && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#EA580C] rounded-full ring-2 ring-[#FAF9F6]"></span>
+                )}
               </button>
 
               {/* Notification Dropdown */}
@@ -133,21 +131,29 @@ export const Navbar = ({ currentTab, setCurrentTab, onOpenApplyModal, onOpenAuth
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-stone-200 py-2 z-50 animate-fadeIn">
                   <div className="px-4 py-2 border-b border-stone-100 flex items-center justify-between">
                     <span className="font-bold text-sm text-[#064E3B]">{t('सूचना आणि अपडेट्स', 'Notifications')}</span>
-                    <span className="text-[11px] bg-orange-100 text-[#EA580C] font-semibold px-2 py-0.5 rounded-full">
-                      ३ नवीन
-                    </span>
+                    {notifications.length > 0 && (
+                      <span className="text-[11px] bg-orange-100 text-[#EA580C] font-semibold px-2 py-0.5 rounded-full">
+                        {notifications.length} नवीन
+                      </span>
+                    )}
                   </div>
-                  <div className="max-h-72 overflow-y-auto divide-y divide-stone-100">
-                    {notifications.map((n) => (
-                      <div key={n.id} className={`p-3 hover:bg-stone-50 transition cursor-pointer ${!n.read ? 'bg-orange-50/40' : ''}`}>
-                        <div className="flex justify-between items-start">
-                          <p className="text-xs font-semibold text-stone-800">{n.title}</p>
-                          <span className="text-[10px] text-stone-400">{n.time}</span>
+                  {notifications.length === 0 ? (
+                    <div className="py-6 px-4 text-center text-xs text-stone-500">
+                      {t('कोणतीही नवीन सूचना नाही.', 'No new notifications.')}
+                    </div>
+                  ) : (
+                    <div className="max-h-72 overflow-y-auto divide-y divide-stone-100">
+                      {notifications.map((n) => (
+                        <div key={n.id} className={`p-3 hover:bg-stone-50 transition cursor-pointer ${!n.read ? 'bg-orange-50/40' : ''}`}>
+                          <div className="flex justify-between items-start">
+                            <p className="text-xs font-semibold text-stone-800">{n.title}</p>
+                            <span className="text-[10px] text-stone-400">{n.time}</span>
+                          </div>
+                          <p className="text-xs text-stone-600 mt-1">{n.desc}</p>
                         </div>
-                        <p className="text-xs text-stone-600 mt-1">{n.desc}</p>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="px-3 pt-2 text-center border-t border-stone-100">
                     <button 
                       onClick={() => { setNotificationsOpen(false); setCurrentTab('track'); }} 
@@ -190,7 +196,7 @@ export const Navbar = ({ currentTab, setCurrentTab, onOpenApplyModal, onOpenAuth
                           onClick={() => { setCurrentTab('wallet'); setUserDropdownOpen(false); }}
                           className="w-full text-left px-4 py-2 hover:bg-stone-50"
                         >
-                          {t('माझे वॉलेट (₹' + (user.walletBalance || 455) + ')', 'My Wallet')}
+                          {t('माझे वॉलेट (₹' + (user.walletBalance || 0) + ')', 'My Wallet (₹' + (user.walletBalance || 0) + ')')}
                         </button>
                       )}
                       <button
@@ -199,25 +205,6 @@ export const Navbar = ({ currentTab, setCurrentTab, onOpenApplyModal, onOpenAuth
                       >
                         {t('माझे अर्ज', 'My Applications')}
                       </button>
-                      
-                      {/* Quick demo switch */}
-                      <div className="border-t border-stone-100 my-1 pt-1 px-4">
-                        <p className="text-[10px] text-stone-400 mb-1">Demo Profile Switch:</p>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => { quickDemoLogin('agent'); setUserDropdownOpen(false); }}
-                            className="text-[10px] px-2 py-0.5 rounded bg-stone-100 hover:bg-orange-100 text-stone-700"
-                          >
-                            Agent (राहुल)
-                          </button>
-                          <button
-                            onClick={() => { quickDemoLogin('user'); setUserDropdownOpen(false); }}
-                            className="text-[10px] px-2 py-0.5 rounded bg-stone-100 hover:bg-blue-100 text-stone-700"
-                          >
-                            Citizen (नागरिक)
-                          </button>
-                        </div>
-                      </div>
                     </div>
 
                     <div className="border-t border-stone-100 pt-1">
@@ -236,7 +223,7 @@ export const Navbar = ({ currentTab, setCurrentTab, onOpenApplyModal, onOpenAuth
                 onClick={onOpenAuthModal}
                 className="px-3.5 py-1.5 rounded-full border border-stone-300 text-stone-800 hover:border-stone-400 hover:bg-stone-100 text-xs sm:text-sm font-semibold transition"
               >
-                {t('लॉगिन', 'Login')}
+                {t('नोंदणी / लॉगिन', 'Register / Login')}
               </button>
             )}
 

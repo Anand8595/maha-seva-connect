@@ -1,26 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Wallet, CheckCircle2, IndianRupee } from '../common/Icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 
-export const WithdrawModal = ({ isOpen, onClose, currentBalance = 455 }) => {
+export const WithdrawModal = ({ isOpen, onClose, currentBalance }) => {
   const { t } = useLanguage();
-  const { updateUser } = useAuth();
-  const [amount, setAmount] = useState('400');
+  const { user, updateUser } = useAuth();
+  const balance = currentBalance !== undefined ? currentBalance : (user?.walletBalance || 0);
+  const [amount, setAmount] = useState('');
   const [payoutMethod, setPayoutMethod] = useState('upi'); // 'upi' | 'bank'
-  const [upiId, setUpiId] = useState('rahulshinde@okaxis');
+  const [upiId, setUpiId] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [ifscCode, setIfscCode] = useState('');
-  const [holderName, setHolderName] = useState('राहुल शिंदे');
+  const [holderName, setHolderName] = useState(user?.name || '');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setAmount('');
+      setHolderName(user?.name || '');
+      setSuccess(false);
+    }
+  }, [isOpen, user]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (Number(amount) > currentBalance) {
+    if (Number(amount) > balance) {
       alert('उपलब्ध शिल्लकीपेक्षा जास्त रक्कम काढता येत नाही.');
       return;
     }
@@ -36,7 +45,7 @@ export const WithdrawModal = ({ isOpen, onClose, currentBalance = 455 }) => {
         holderName,
       });
 
-      updateUser({ walletBalance: Math.max(0, currentBalance - Number(amount)) });
+      updateUser({ walletBalance: Math.max(0, balance - Number(amount)) });
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
@@ -69,7 +78,7 @@ export const WithdrawModal = ({ isOpen, onClose, currentBalance = 455 }) => {
           </h2>
           <p className="text-xs text-stone-500 mt-0.5">
             {t('उपलब्ध शिल्लक: ', 'Available Balance: ')}
-            <strong className="text-[#064E3B] font-bold text-sm">₹{currentBalance}</strong>
+            <strong className="text-[#064E3B] font-bold text-sm">₹{balance}</strong>
           </p>
         </div>
 
@@ -92,7 +101,7 @@ export const WithdrawModal = ({ isOpen, onClose, currentBalance = 455 }) => {
               <input
                 type="number"
                 min="100"
-                max={currentBalance}
+                max={balance}
                 required
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}

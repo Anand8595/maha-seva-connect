@@ -4,6 +4,88 @@ import User from '../models/User.js';
 import WalletTransaction from '../models/WalletTransaction.js';
 import { memoryStore, getIsMongoConnected } from '../config/db.js';
 
+// Server-Sent Events (SSE) clients set for real-time multi-window sync
+const sseClients = new Set();
+
+export const subscribeApplicationsStream = (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+  });
+  if (typeof res.flushHeaders === 'function') {
+    res.flushHeaders();
+  }
+
+  // Initial handshake
+  res.write(`data: ${JSON.stringify({ type: 'CONNECTED', timestamp: Date.now() })}\n\n`);
+
+  sseClients.add(res);
+
+  req.on('close', () => {
+    sseClients.delete(res);
+  });
+};
+
+export const broadcastApplicationEvent = (type, data) => {
+  const payload = `data: ${JSON.stringify({ type, ...data })}\n\n`;
+  for (const client of sseClients) {
+    try {
+      client.write(payload);
+    } catch {
+      sseClients.delete(client);
+    }
+  }
+};
+
+export const enrichApp = (a) => {
+  if (!a) return a;
+  const doc = a.toObject ? a.toObject() : { ...a };
+  return {
+    ...doc,
+    serviceTitle:
+      doc.serviceTitle ||
+      doc.serviceDetails?.marathiTitle ||
+      doc.serviceDetails?.title ||
+      'शासकीय सेवा',
+    category: doc.category || doc.serviceDetails?.category || 'certificates',
+    categoryMarathi:
+      doc.categoryMarathi ||
+      doc.serviceDetails?.categoryMarathi ||
+      'दाखले / प्रमाणपत्र',
+    applicantName: doc.applicantName || doc.applicantDetails?.fullName || 'नागरिक',
+    phone: doc.phone || doc.applicantDetails?.phone || '',
+    date:
+      doc.date ||
+      (doc.createdAt
+        ? new Date(doc.createdAt).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0]),
+    time:
+      doc.time ||
+      (doc.createdAt
+        ? new Date(doc.createdAt).toLocaleTimeString('mr-IN', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : ''),
+    payment: doc.payment || {
+      amount: doc.paymentAmount || doc.serviceDetails?.basePrice || 149,
+      commission: doc.serviceDetails?.agentCommission || 30,
+      status: doc.paymentStatus || 'paid',
+    },
+    paymentAmount:
+      doc.paymentAmount ||
+      doc.payment?.amount ||
+      doc.serviceDetails?.basePrice ||
+      149,
+    uploadedDocs: doc.uploadedDocs || doc.uploadedDocuments || [],
+    uploadedDocuments: doc.uploadedDocs || doc.uploadedDocuments || [],
+    issuedDocs: doc.issuedDocs || doc.deliveredDocuments || [],
+    deliveredDocuments: doc.issuedDocs || doc.deliveredDocuments || [],
+  };
+};
+
 export const createApplication = async (req, res) => {
   try {
     const {
@@ -27,13 +109,34 @@ export const createApplication = async (req, res) => {
     // Find service
     let service;
     if (getIsMongoConnected()) {
-      service = await Service.findById(serviceId);
+      if (serviceId && /^[0-9a-fA-F]{24}$/.test(serviceId)) {
+        service = await Service.findById(serviceId);
+      }
+      if (!service) {
+        service = await Service.findOne({
+          $or: [{ slug: serviceId }, { _id: serviceId }],
+        });
+      }
     } else {
-      service = memoryStore.services.find((s) => String(s._id) === String(serviceId) || s.slug === serviceId);
+      service = memoryStore.services.find(
+        (s) =>
+          String(s._id) === String(serviceId) ||
+          s.slug === serviceId ||
+          (req.body.serviceTitle && (s.marathiTitle === req.body.serviceTitle || s.title === req.body.serviceTitle))
+      );
     }
 
     if (!service) {
-      return res.status(404).json({ success: false, message: 'निवडलेली सेवा उपलब्ध नाही.' });
+      service = {
+        _id: serviceId || 'srv_custom',
+        title: req.body.serviceTitle || 'Government Service',
+        marathiTitle: req.body.serviceTitle || 'शासकीय सेवा',
+        slug: req.body.slug || serviceId || 'govt-service',
+        category: req.body.category || 'certificates',
+        categoryMarathi: req.body.categoryMarathi || 'दाखले / प्रमाणपत्र',
+        basePrice: req.body.basePrice || 99,
+        agentCommission: req.body.agentCommission || 25,
+      };
     }
 
     // Process referral code
@@ -48,18 +151,19 @@ export const createApplication = async (req, res) => {
       }
     }
 
-    // Form docs array
-    const docs = Array.isArray(uploadedDocs) && uploadedDocs.length > 0
-      ? uploadedDocs.map((d) => ({
+    // Form docs array from client upload
+    const incomingDocs = req.body.uploadedDocs || req.body.uploadedDocuments || uploadedDocs || [];
+    const docs = Array.isArray(incomingDocs) && incomingDocs.length > 0
+      ? incomingDocs.map((d) => ({
           docType: d.docType || 'कागदपत्र',
           name: d.name || 'दस्तावेज',
-          url: d.url || '/uploads/default-doc.pdf',
+          url: d.url || '',
+          size: d.size || '',
+          type: d.type || '',
           status: 'valid',
+          uploadedAt: d.uploadedAt || new Date(),
         }))
-      : [
-          { docType: 'आधार कार्ड', name: 'aadhaar_card.pdf', url: '/demo-docs/aadhaar.pdf', status: 'valid' },
-          { docType: 'ओळख पुरावा', name: 'photo.jpg', url: '/demo-docs/photo.jpg', status: 'valid' },
-        ];
+      : [];
 
     const initialTimeline = [
       {
@@ -73,12 +177,14 @@ export const createApplication = async (req, res) => {
     if (getIsMongoConnected()) {
       const newApp = await Application.create({
         applicationNumber,
-        userId: req.user ? req.user._id : null,
+        userId: req.user ? req.user._id : (req.body.userId || null),
         serviceId: service._id,
         serviceDetails: {
           title: service.title,
           marathiTitle: service.marathiTitle,
           slug: service.slug,
+          category: service.category || 'certificates',
+          categoryMarathi: service.categoryMarathi || 'दाखले / प्रमाणपत्र',
           basePrice: service.basePrice,
           agentCommission: service.agentCommission,
         },
@@ -114,34 +220,53 @@ export const createApplication = async (req, res) => {
         });
       }
 
+      const enrichedMongoApp = enrichApp(newApp);
+      broadcastApplicationEvent('NEW_APPLICATION', { application: enrichedMongoApp });
+
       return res.status(201).json({
         success: true,
         message: 'तुमचा अर्ज यशस्वीरीत्या सादर केला गेला!',
-        application: newApp,
+        application: enrichedMongoApp,
       });
     } else {
       const newApp = {
         _id: `app_${Date.now()}`,
         applicationNumber,
-        userId: req.user ? req.user._id : null,
+        userId: req.user ? req.user._id : (req.body.userId || null),
         serviceId: service._id,
+        serviceTitle: service.marathiTitle || service.title,
         serviceDetails: {
           title: service.title,
           marathiTitle: service.marathiTitle,
           slug: service.slug,
+          category: service.category || 'certificates',
+          categoryMarathi: service.categoryMarathi || 'दाखले / प्रमाणपत्र',
           basePrice: service.basePrice,
           agentCommission: service.agentCommission,
         },
+        category: service.category || 'certificates',
+        categoryMarathi: service.categoryMarathi || 'दाखले / प्रमाणपत्र',
+        applicantName: applicantDetails.fullName,
+        phone: applicantDetails.phone,
         applicantDetails,
         uploadedDocs: docs,
+        uploadedDocuments: docs,
         currentStage: 1,
         status: 'submitted',
+        statusBadge: 'नवीन अर्ज (आज)',
         statusNoteMarathi: 'अर्ज प्राप्त झाला आहे. कागदपत्रे तपासणी लवकरच सुरू होईल.',
         paymentStatus: 'paid',
-        paymentAmount: service.basePrice,
+        paymentAmount: service.basePrice || 99,
+        payment: {
+          amount: service.basePrice || 99,
+          commission: service.agentCommission || 20,
+          status: 'paid',
+        },
         referralCodeUsed: referralCode ? referralCode.toUpperCase() : '',
         agentId: agent ? agent._id : null,
         timeline: initialTimeline,
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toLocaleTimeString('mr-IN', { hour: '2-digit', minute: '2-digit' }),
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -165,10 +290,13 @@ export const createApplication = async (req, res) => {
         agent.pendingBalance = (agent.pendingBalance || 0) + agentCommission;
       }
 
+      const enrichedApp = enrichApp(newApp);
+      broadcastApplicationEvent('NEW_APPLICATION', { application: enrichedApp });
+
       return res.status(201).json({
         success: true,
         message: 'तुमचा अर्ज यशस्वीरीत्या सादर केला गेला!',
-        application: newApp,
+        application: enrichedApp,
       });
     }
   } catch (error) {
@@ -179,52 +307,74 @@ export const createApplication = async (req, res) => {
 
 export const trackApplication = async (req, res) => {
   try {
-    const { query } = req.query;
+    const { query, phone, userId } = req.query;
 
-    if (!query || query.trim() === '' || query.toLowerCase() === 'all') {
-      // Return recent applications for the Demo list (matching Screenshot 1)
+    const filterPhone = phone || (query && query.startsWith('phone:') ? query.replace('phone:', '').trim() : null);
+    const filterUserId = userId || null;
+
+    // 1. Phone or UserId specific query (User tracking their own applications)
+    if (filterPhone || filterUserId) {
       if (getIsMongoConnected()) {
-        const apps = await Application.find().sort({ createdAt: -1 }).limit(10);
-        return res.json({ success: true, count: apps.length, applications: apps });
+        const mongoFilter = {
+          $or: [
+            ...(filterPhone ? [{ 'applicantDetails.phone': filterPhone }, { phone: filterPhone }] : []),
+            ...(filterUserId ? [{ userId: filterUserId }] : []),
+          ],
+        };
+        const applications = await Application.find(mongoFilter).sort({ createdAt: -1 });
+        const enriched = applications.map(enrichApp);
+        return res.json({ success: true, count: enriched.length, applications: enriched });
       } else {
-        return res.json({
-          success: true,
-          count: memoryStore.applications.length,
-          applications: memoryStore.applications,
+        const filtered = memoryStore.applications.filter((app) => {
+          const appPhone = app.phone || app.applicantDetails?.phone;
+          const matchPhone = filterPhone && appPhone === filterPhone;
+          const matchUser = filterUserId && String(app.userId) === String(filterUserId);
+          return matchPhone || matchUser;
         });
+        const enriched = filtered.map(enrichApp);
+        return res.json({ success: true, count: enriched.length, applications: enriched });
       }
     }
 
+    // 2. No query supplied: return empty array rather than dumping other clients' applications
+    if (!query || query.trim() === '') {
+      return res.json({ success: true, count: 0, applications: [] });
+    }
+
+    // 3. Search by Application Number or exact phone digits
     const cleanQuery = query.trim().toUpperCase();
+    const digitsOnly = cleanQuery.replace(/\D/g, '');
 
     if (getIsMongoConnected()) {
-      // Search by Application ID (e.g. YD-24081 or 24081) OR mobile ending with digits
       const applications = await Application.find({
         $or: [
           { applicationNumber: { $regex: cleanQuery, $options: 'i' } },
-          { 'applicantDetails.phone': { $regex: cleanQuery.replace(/\D/g, '') + '$' } },
+          ...(digitsOnly.length >= 4 ? [{ 'applicantDetails.phone': { $regex: digitsOnly + '$' } }] : []),
           { 'applicantDetails.fullName': { $regex: cleanQuery, $options: 'i' } },
         ],
       }).sort({ createdAt: -1 });
 
+      const enriched = applications.map(enrichApp);
       return res.json({
         success: true,
-        count: applications.length,
-        applications,
+        count: enriched.length,
+        applications: enriched,
       });
     } else {
-      const digitsOnly = cleanQuery.replace(/\D/g, '');
       const filtered = memoryStore.applications.filter((app) => {
-        const matchNumber = app.applicationNumber.toUpperCase().includes(cleanQuery);
-        const matchPhone = digitsOnly && app.applicantDetails.phone && app.applicantDetails.phone.endsWith(digitsOnly);
-        const matchName = app.applicantDetails.fullName.toLowerCase().includes(cleanQuery.toLowerCase());
+        const matchNumber = app.applicationNumber?.toUpperCase().includes(cleanQuery);
+        const appPhone = app.phone || app.applicantDetails?.phone;
+        const matchPhone = digitsOnly.length >= 4 && appPhone && appPhone.endsWith(digitsOnly);
+        const appName = app.applicantName || app.applicantDetails?.fullName;
+        const matchName = appName && appName.toLowerCase().includes(cleanQuery.toLowerCase());
         return matchNumber || matchPhone || matchName;
       });
 
+      const enriched = filtered.map(enrichApp);
       return res.json({
         success: true,
-        count: filtered.length,
-        applications: filtered,
+        count: enriched.length,
+        applications: enriched,
       });
     }
   } catch (error) {
@@ -243,7 +393,8 @@ export const getAllApplications = async (req, res) => {
       if (stage && stage !== 'all') filter.currentStage = Number(stage);
 
       const applications = await Application.find(filter).sort({ createdAt: -1 });
-      return res.json({ success: true, count: applications.length, applications });
+      const enriched = applications.map(enrichApp);
+      return res.json({ success: true, count: enriched.length, applications: enriched });
     } else {
       let filtered = [...memoryStore.applications];
       if (status && status !== 'all') {
@@ -252,12 +403,14 @@ export const getAllApplications = async (req, res) => {
       if (stage && stage !== 'all') {
         filtered = filtered.filter((a) => a.currentStage === Number(stage));
       }
-      return res.json({ success: true, count: filtered.length, applications: filtered });
+      const enriched = filtered.map(enrichApp);
+      return res.json({ success: true, count: enriched.length, applications: enriched });
     }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 export const updateApplicationStage = async (req, res) => {
   try {
@@ -312,7 +465,9 @@ export const updateApplicationStage = async (req, res) => {
       }
 
       await app.save();
-      return res.json({ success: true, message: 'अर्जाची स्थिती अद्ययावत केली गेली!', application: app });
+      const enrichedMongo = enrichApp(app);
+      broadcastApplicationEvent('APPLICATION_UPDATED', { application: enrichedMongo });
+      return res.json({ success: true, message: 'अर्जाची स्थिती अद्ययावत केली गेली!', application: enrichedMongo });
     } else {
       const app = memoryStore.applications.find((a) => String(a._id) === String(id) || a.applicationNumber === id);
       if (!app) {
@@ -349,7 +504,10 @@ export const updateApplicationStage = async (req, res) => {
         }
       }
 
-      return res.json({ success: true, message: 'अर्जाची स्थिती अद्ययावत केली गेली!', application: app });
+      const enrichedMemory = enrichApp(app);
+      broadcastApplicationEvent('APPLICATION_UPDATED', { application: enrichedMemory });
+
+      return res.json({ success: true, message: 'अर्जाची स्थिती अद्ययावत केली गेली!', application: enrichedMemory });
     }
   } catch (error) {
     console.error('Update Application Stage Error:', error);
@@ -419,6 +577,108 @@ export const uploadMissingDocs = async (req, res) => {
       return res.json({ success: true, message: 'कागदपत्रे यशस्वीरीत्या अपलोड झाली!', application: app });
     }
   } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const sendDocumentToClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { documentName, documentUrl, documentSize, documentType, note, markCompleted = true } = req.body;
+
+    if (!documentName || !documentUrl) {
+      return res.status(400).json({ success: false, message: 'दस्तऐवजाचे नाव आणि फाईल आवश्यक आहेत.' });
+    }
+
+    const issuedDoc = {
+      name: documentName,
+      url: documentUrl,
+      size: documentSize || '',
+      type: documentType || 'application/pdf',
+      issuedAt: new Date(),
+      issuedBy: 'प्रशासक (Admin)',
+      note: note || 'अधिकृत शासकीय दाखला / दस्तऐवज तयार झाला असून जारी केला आहे.',
+    };
+
+    if (getIsMongoConnected()) {
+      const app = await Application.findById(id);
+      if (!app) return res.status(404).json({ success: false, message: 'अर्ज सापडला नाही.' });
+
+      if (!Array.isArray(app.issuedDocs)) app.issuedDocs = [];
+      app.issuedDocs.push(issuedDoc);
+
+      if (markCompleted) {
+        app.currentStage = 4;
+        app.status = 'completed';
+        app.statusNoteMarathi = 'अधिकृत प्रमाणपत्र जारी झाले आहे. कृपया डाऊनलोड करा.';
+      }
+
+      app.timeline.push({
+        stage: app.currentStage,
+        titleMarathi: 'प्रमाणपत्र जारी झाले',
+        descriptionMarathi: `${documentName} नागरिकाला पाठवण्यात आले आहे.`,
+        updatedAt: new Date(),
+      });
+
+      // Clear agent commission if completed
+      if (app.status === 'completed' && app.agentId) {
+        const tx = await WalletTransaction.findOne({ applicationId: app._id, agentId: app.agentId, type: 'credit' });
+        if (tx && tx.status === 'pending') {
+          tx.status = 'cleared';
+          tx.processedAt = new Date();
+          await tx.save();
+          await User.findByIdAndUpdate(app.agentId, {
+            $inc: { walletBalance: tx.amount, pendingBalance: -tx.amount, totalEarned: tx.amount },
+          });
+        }
+      }
+
+      await app.save();
+      const enriched = enrichApp(app);
+      broadcastApplicationEvent('APPLICATION_UPDATED', { application: enriched });
+      return res.json({ success: true, message: 'दस्तऐवज नागरिकाला यशस्वीरीत्या पाठवला!', application: enriched });
+    } else {
+      const app = memoryStore.applications.find((a) => String(a._id) === String(id) || a.applicationNumber === id);
+      if (!app) return res.status(404).json({ success: false, message: 'अर्ज सापडला नाही.' });
+
+      if (!Array.isArray(app.issuedDocs)) app.issuedDocs = [];
+      app.issuedDocs.push(issuedDoc);
+      app.deliveredDocuments = app.issuedDocs;
+
+      if (markCompleted) {
+        app.currentStage = 4;
+        app.status = 'completed';
+        app.statusNoteMarathi = 'अधिकृत प्रमाणपत्र जारी झाले आहे. कृपया डाऊनलोड करा.';
+      }
+
+      app.timeline.push({
+        stage: app.currentStage,
+        titleMarathi: 'प्रमाणपत्र जारी झाले',
+        descriptionMarathi: `${documentName} नागरिकाला पाठवण्यात आले आहे.`,
+        updatedAt: new Date(),
+      });
+      app.updatedAt = new Date();
+
+      if (app.status === 'completed' && app.agentId) {
+        const tx = memoryStore.walletTransactions.find((t) => String(t.applicationId) === String(app._id) && t.type === 'credit' && t.status === 'pending');
+        if (tx) {
+          tx.status = 'cleared';
+          tx.processedAt = new Date();
+          const agent = memoryStore.users.find((u) => String(u._id) === String(app.agentId));
+          if (agent) {
+            agent.walletBalance = (agent.walletBalance || 0) + tx.amount;
+            agent.pendingBalance = Math.max(0, (agent.pendingBalance || 0) - tx.amount);
+            agent.totalEarned = (agent.totalEarned || 0) + tx.amount;
+          }
+        }
+      }
+
+      const enriched = enrichApp(app);
+      broadcastApplicationEvent('APPLICATION_UPDATED', { application: enriched });
+      return res.json({ success: true, message: 'दस्तऐवज नागरिकाला यशस्वीरीत्या पाठवला!', application: enriched });
+    }
+  } catch (error) {
+    console.error('Send document error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

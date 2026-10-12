@@ -337,353 +337,9 @@ export const fallbackServices = [
   },
 ];
 
-// Fallback applications with full client document submissions
-export const fallbackApplications = [
-  {
-    _id: 'app_24081',
-    applicationNumber: 'YD-24081',
-    serviceTitle: 'उत्पन्न दाखला (Income Certificate)',
-    serviceSlug: 'income-certificate',
-    category: 'certificates',
-    applicantName: 'सुनीता बाळू पाटील',
-    date: '2026-10-06',
-    time: '११:३० AM',
-    phone: '9850123456',
-    currentStage: 4, // 1: अर्ज प्राप्त, 2: तपासणी, 3: कागदपत्रे, 4: प्रक्रियेत, 5: पूर्ण
-    status: 'in_review',
-    statusBadge: 'प्रक्रियेत',
-    badgeVariant: 'teal',
-    statusNote: 'तहसीलदार कार्यालयाकडून स्वाक्षरी पडताळणी प्रक्रियेत आहे.',
-    applicantDetails: {
-      fullName: 'सुनीता बाळू पाटील',
-      phone: '9850123456',
-      email: 'sunita.patil@gmail.com',
-      aadhaarNumber: 'XXXX-XXXX-8921',
-      district: 'पुणे',
-      taluka: 'हवेली',
-      village: 'वाघोली',
-      annualIncome: '₹ 85,000',
-      purpose: 'मुलाच्या शैक्षणिक शिष्यवृत्तीसाठी (Education Scholarship)',
-    },
-    payment: {
-      amount: 149,
-      commission: 30,
-      status: 'paid',
-    },
-    uploadedDocs: [
-      {
-        id: 'doc_1',
-        docType: 'आधार कार्ड',
-        name: 'आधार कार्ड (Aadhaar Card)',
-        fileName: 'aadhaar_sunita_patil.pdf',
-        fileType: 'pdf',
-        fileSize: '1.4 MB',
-        status: 'verified',
-        uploadedAt: '०६ ऑक्टो २०२६, ११:२० AM',
-      },
-      {
-        id: 'doc_2',
-        docType: 'रेशन कार्ड',
-        name: 'रेशन कार्ड प्रत (Ration Card)',
-        fileName: 'ration_card_wagholi.jpg',
-        fileType: 'image',
-        fileSize: '850 KB',
-        status: 'verified',
-        uploadedAt: '०६ ऑक्टो २०२६, ११:२२ AM',
-      },
-      {
-        id: 'doc_3',
-        docType: 'उत्पन्न पुरावा / तलाठी अहवाल',
-        name: 'तलाठी अहवाल व स्वयंघोषणापत्र (Talathi Ahwal)',
-        fileName: 'talathi_ahwal_2026.pdf',
-        fileType: 'pdf',
-        fileSize: '2.1 MB',
-        status: 'pending',
-        uploadedAt: '०६ ऑक्टो २०२६, ११:२५ AM',
-      },
-    ],
-  },
-  {
-    _id: 'app_24077',
-    applicationNumber: 'YD-24077',
-    serviceTitle: 'पॅन कार्ड (नवीन / दुरुस्ती)',
-    serviceSlug: 'pan-card',
-    category: 'identity',
-    applicantName: 'गणेश मारुती जाधव',
-    date: '2026-10-03',
-    time: '०२:१५ PM',
-    phone: '9822987077',
-    currentStage: 5,
-    status: 'completed',
-    statusBadge: 'पूर्ण',
-    badgeVariant: 'green',
-    statusNote: 'पॅन कार्ड यशस्वीरीत्या जनरेट झाले आहे. ई-पॅन ईमेल व व्हॉट्सॲपवर पाठवले आहे.',
-    applicantDetails: {
-      fullName: 'गणेश मारुती जाधव',
-      phone: '9822987077',
-      email: 'ganesh.jadhav@outlook.com',
-      aadhaarNumber: 'XXXX-XXXX-4532',
-      district: 'सातारा',
-      taluka: 'कराड',
-      village: 'मलकापूर',
-      dob: '15/08/1996',
-      panType: 'नवीन पॅन कार्ड (New PAN)',
-    },
-    payment: {
-      amount: 199,
-      commission: 40,
-      status: 'paid',
-    },
-    uploadedDocs: [
-      {
-        id: 'doc_1',
-        docType: 'आधार कार्ड',
-        name: 'आधार कार्ड (Aadhaar Card)',
-        fileName: 'aadhaar_ganesh.pdf',
-        fileType: 'pdf',
-        fileSize: '1.1 MB',
-        status: 'verified',
-        uploadedAt: '०३ ऑक्टो २०२६, ०२:०५ PM',
-      },
-      {
-        id: 'doc_2',
-        docType: 'पासपोर्ट फोटो',
-        name: 'पासपोर्ट साइज फोटो (Passport Photo)',
-        fileName: 'photo_ganesh.jpg',
-        fileType: 'image',
-        fileSize: '420 KB',
-        status: 'verified',
-        uploadedAt: '०३ ऑक्टो २०२६, ०२:०८ PM',
-      },
-      {
-        id: 'doc_3',
-        docType: 'स्वाक्षरी',
-        name: 'स्वाक्षरी प्रत (Signature)',
-        fileName: 'sign_ganesh.png',
-        fileType: 'image',
-        fileSize: '310 KB',
-        status: 'verified',
-        uploadedAt: '०३ ऑक्टो २०२६, ०२:१० PM',
-      },
-    ],
-    issuedDocument: {
-      name: 'ई-पॅन कार्ड डिजिटल प्रत (e-PAN PDF)',
-      fileName: 'e_pan_YD24077.pdf',
-      fileSize: '850 KB',
-      issuedDate: '०५ ऑक्टो २०२६',
-    },
-  },
-  {
-    _id: 'app_24072',
-    applicationNumber: 'YD-24072',
-    serviceTitle: 'शेतकरी ओळखपत्र (Farmer ID)',
-    serviceSlug: 'farmer-id',
-    category: 'farmer',
-    applicantName: 'आशा रामदास शिंदे',
-    date: '2026-10-02',
-    time: '०४:४५ PM',
-    phone: '9890124072',
-    currentStage: 3,
-    status: 'action_needed',
-    statusBadge: 'कागदपत्रे हवी',
-    badgeVariant: 'red',
-    statusNote: '७/१२ उतारा स्पष्ट नाही, कृपया नवीन डिजिटल स्वाक्षरी असलेला उतारा अपलोड करा.',
-    actionRequiredNote: '७/१२ उतारा अस्पष्ट आहे. कृपया अधिकृत डिजिटल ७/१२ उतारा पुन्हा अपलोड करा.',
-    applicantDetails: {
-      fullName: 'आशा रामदास शिंदे',
-      phone: '9890124072',
-      email: 'asha.shinde@gmail.com',
-      aadhaarNumber: 'XXXX-XXXX-6789',
-      district: 'अहमदनगर',
-      taluka: 'संगमनेर',
-      village: 'धांदरफळ',
-      gatNumber: 'गट क्र. १४२/३',
-    },
-    payment: {
-      amount: 99,
-      commission: 25,
-      status: 'paid',
-    },
-    uploadedDocs: [
-      {
-        id: 'doc_1',
-        docType: '७/१२ उतारा',
-        name: 'डिजिटल ७/१२ व ८-अ उतारा',
-        fileName: '7_12_extract_unclear.jpg',
-        fileType: 'image',
-        fileSize: '520 KB',
-        status: 'rejected',
-        rejectionReason: 'फोटो अस्पष्ट व मजकूर वाचता येत नाही. नवीन डिजिटल स्वाक्षरी असलेला उतारा हवा.',
-        uploadedAt: '०२ ऑक्टो २०२६, ०४:४० PM',
-      },
-      {
-        id: 'doc_2',
-        docType: 'आधार कार्ड',
-        name: 'आधार कार्ड (Aadhaar Card)',
-        fileName: 'aadhaar_asha.pdf',
-        fileType: 'pdf',
-        fileSize: '1.3 MB',
-        status: 'verified',
-        uploadedAt: '०२ ऑक्टो २०२६, ०४:४१ PM',
-      },
-      {
-        id: 'doc_3',
-        docType: 'बँक पासबुक',
-        name: 'बँक पासबुक प्रत (Bank Passbook)',
-        fileName: 'bank_passbook_sbi.jpg',
-        fileType: 'image',
-        fileSize: '780 KB',
-        status: 'verified',
-        uploadedAt: '०२ ऑक्टो २०२६, ०४:४३ PM',
-      },
-    ],
-  },
-  {
-    _id: 'app_24065',
-    applicationNumber: 'YD-24065',
-    serviceTitle: 'जात प्रमाणपत्र (Caste Certificate)',
-    serviceSlug: 'caste-certificate',
-    category: 'certificates',
-    applicantName: 'सचिन मारुती तांबडे',
-    date: '2026-10-01',
-    time: '१०:०० AM',
-    phone: '9860456123',
-    currentStage: 2,
-    status: 'in_review',
-    statusBadge: 'तपासणीत',
-    badgeVariant: 'amber',
-    statusNote: 'एसडीओ कार्यालयाकडे कागदपत्रांची प्राथमिक तपासणी सुरू आहे.',
-    applicantDetails: {
-      fullName: 'सचिन मारुती तांबडे',
-      phone: '9860456123',
-      email: 'sachin.tambade@gmail.com',
-      aadhaarNumber: 'XXXX-XXXX-3341',
-      district: 'नाशिक',
-      taluka: 'निफाड',
-      village: 'ओझर',
-      caste: 'मराठा-कुणबी / OBC',
-    },
-    payment: {
-      amount: 249,
-      commission: 50,
-      status: 'paid',
-    },
-    uploadedDocs: [
-      {
-        id: 'doc_1',
-        docType: 'शाळा सोडल्याचा दाखला',
-        name: 'शाळा सोडल्याचा दाखला (School LC)',
-        fileName: 'lc_sachin.pdf',
-        fileType: 'pdf',
-        fileSize: '1.2 MB',
-        status: 'verified',
-        uploadedAt: '०१ ऑक्टो २०२६, ०९:५० AM',
-      },
-      {
-        id: 'doc_2',
-        docType: 'जात पुरावा',
-        name: '१९६७ पूर्वीचा जात पुरावा (Pre-1967 Proof)',
-        fileName: 'old_caste_record_1965.pdf',
-        fileType: 'pdf',
-        fileSize: '2.8 MB',
-        status: 'pending',
-        uploadedAt: '०१ ऑक्टो २०२६, ०९:५२ AM',
-      },
-      {
-        id: 'doc_3',
-        docType: 'आधार कार्ड',
-        name: 'आधार कार्ड व फोटो (Aadhaar & Photo)',
-        fileName: 'aadhaar_sachin.pdf',
-        fileType: 'pdf',
-        fileSize: '980 KB',
-        status: 'verified',
-        uploadedAt: '०१ ऑक्टो २०२६, ०९:५५ AM',
-      },
-    ],
-  },
-  {
-    _id: 'app_24050',
-    applicationNumber: 'YD-24050',
-    serviceTitle: 'मतदार ओळखपत्र (Voter ID)',
-    serviceSlug: 'voter-id',
-    category: 'identity',
-    applicantName: 'राहुल दत्तात्रय कांबळे',
-    date: '2026-09-29',
-    time: '०३:३० PM',
-    phone: '9876543210',
-    currentStage: 1,
-    status: 'submitted',
-    statusBadge: 'नवीन अर्ज',
-    badgeVariant: 'blue',
-    statusNote: 'नवीन मतदार नोंदणी अर्ज प्राप्त झाला असून पडताळणी बाकी आहे.',
-    applicantDetails: {
-      fullName: 'राहुल दत्तात्रय कांबळे',
-      phone: '9876543210',
-      email: 'rahul.kamble@gmail.com',
-      aadhaarNumber: 'XXXX-XXXX-1994',
-      district: 'कोल्हापूर',
-      taluka: 'करवीर',
-      village: 'शिरोली',
-      assemblyConstituency: '२७४ - कोल्हापूर दक्षिण',
-    },
-    payment: {
-      amount: 99,
-      commission: 20,
-      status: 'paid',
-    },
-    uploadedDocs: [
-      {
-        id: 'doc_1',
-        docType: 'आधार कार्ड',
-        name: 'आधार कार्ड (Aadhaar Card)',
-        fileName: 'aadhaar_rahul.pdf',
-        fileType: 'pdf',
-        fileSize: '1.1 MB',
-        status: 'pending',
-        uploadedAt: '२९ सप्टें २०२६, ०३:२२ PM',
-      },
-      {
-        id: 'doc_2',
-        docType: 'वय पुरावा',
-        name: 'वय पुरावा / जन्म दाखला (Age Proof)',
-        fileName: 'birth_cert_rahul.jpg',
-        fileType: 'image',
-        fileSize: '650 KB',
-        status: 'pending',
-        uploadedAt: '२९ सप्टें २०२६, ०३:२५ PM',
-      },
-      {
-        id: 'doc_3',
-        docType: 'पासपोर्ट फोटो',
-        name: 'पासपोर्ट साइज रंगीत फोटो (Photo)',
-        fileName: 'passport_photo_rahul.jpg',
-        fileType: 'image',
-        fileSize: '390 KB',
-        status: 'pending',
-        uploadedAt: '२९ सप्टें २०२६, ०३:२८ PM',
-      },
-    ],
-  },
-];
-
-export const fallbackNotices = [
-  {
-    _id: 'ntc_1',
-    title: 'Farmer ID Registration Open',
-    marathiTitle: 'शेतकरी ओळखपत्र नोंदणी सुरू',
-    tag: 'नवीन',
-    tagColor: 'orange',
-    contentMarathi: 'Farmer ID नोंदणीसाठी ७/१२ व आधार लिंक मोबाइल तयार ठेवा.',
-  },
-  {
-    _id: 'ntc_2',
-    title: 'Diwali Referral Bonus',
-    marathiTitle: 'दिवाळी रेफरल बोनस',
-    tag: 'ऑफर',
-    tagColor: 'green',
-    contentMarathi: 'प्रत्येक ३ यशस्वी अर्जांमागे अतिरिक्त ₹१०० बोनस थेट वॉलेटमध्ये!',
-  },
-];
+// Empty fallback applications and notices
+export const fallbackApplications = [];
+export const fallbackNotices = [];
 
 // Helper to make API calls with seamless fallback
 async function fetchSafe(url, options = {}, fallbackGenerator) {
@@ -728,18 +384,7 @@ export const api = {
   // Applications
   trackApplications: async (query = '') => {
     return fetchSafe(`/applications/track?query=${encodeURIComponent(query)}`, {}, () => {
-      if (!query || query.trim() === '' || query.toLowerCase() === 'all') {
-        return { success: true, count: fallbackApplications.length, applications: fallbackApplications };
-      }
-      const q = query.trim().toUpperCase();
-      const lastDigits = q.replace(/\D/g, '');
-      const filtered = fallbackApplications.filter((app) => {
-        const matchNum = app.applicationNumber.toUpperCase().includes(q);
-        const matchPhone = lastDigits && app.phone && app.phone.endsWith(lastDigits);
-        const matchName = app.applicantName && app.applicantName.includes(q);
-        return matchNum || matchPhone || matchName;
-      });
-      return { success: true, count: filtered.length, applications: filtered };
+      return { success: true, count: 0, applications: [] };
     });
   },
 
@@ -751,8 +396,9 @@ export const api = {
         body: JSON.stringify(payload),
       });
       if (res.ok) return await res.json();
-      throw new Error('API failed');
-    } catch {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || 'API failed');
+    } catch (err) {
       // Create local fallback application
       const num = 'YD-' + Math.floor(10000 + Math.random() * 90000);
       const newApp = {
@@ -768,8 +414,9 @@ export const api = {
         badgeVariant: 'teal',
         statusNote: 'तुमचा अर्ज यशस्वीरीत्या प्राप्त झाला आहे.',
         applicantDetails: payload.applicantDetails,
+        uploadedDocs: payload.uploadedDocs || payload.uploadedDocuments || [],
+        uploadedDocuments: payload.uploadedDocs || payload.uploadedDocuments || [],
       };
-      fallbackApplications.unshift(newApp);
       return { success: true, message: 'अर्ज यशस्वी सादर झाला!', application: newApp };
     }
   },
@@ -784,15 +431,6 @@ export const api = {
       if (res.ok) return await res.json();
       throw new Error('Upload missing docs failed');
     } catch {
-      const app = fallbackApplications.find((a) => a._id === appId || a.applicationNumber === appId);
-      if (app) {
-        app.status = 'in_review';
-        app.statusBadge = 'प्रक्रियेत';
-        app.badgeVariant = 'teal';
-        app.currentStage = 3;
-        app.actionRequiredNote = '';
-        app.statusNote = 'नवीन कागदपत्रे प्राप्त झाली आहेत. तपासणी प्रक्रियेत आहे.';
-      }
       return { success: true, message: 'कागदपत्रे यशस्वीरीत्या अपलोड झाली!' };
     }
   },
@@ -807,61 +445,31 @@ export const api = {
       if (res.ok) return await res.json();
       throw new Error('Update stage failed');
     } catch {
-      const app = fallbackApplications.find((a) => a._id === appId || a.applicationNumber === appId);
-      if (app) {
-        if (updates.currentStage) app.currentStage = updates.currentStage;
-        if (updates.status) app.status = updates.status;
-        if (updates.statusNoteMarathi) app.statusNote = updates.statusNoteMarathi;
-      }
       return { success: true, message: 'स्थिती अपडेट झाली!' };
     }
   },
 
   // Wallet
   getWalletOverview: async () => {
-    return fetchSafe('/wallet/overview', {}, () => ({
-      success: true,
-      data: {
-        availableBalance: 455,
-        pendingBalance: 50,
-        clearedTotal: 1240,
-        withdrawnTotal: 500,
-        agentName: 'राहुल शिंदे (Rahul Shinde)',
-        referralCode: 'YD-RAHUL100',
-        transactions: [
-          {
-            _id: 'tx_1',
-            applicationNumber: 'YD-24077',
-            applicantName: 'गणेश जाधव',
-            serviceTitle: 'पॅन कार्ड (नवीन / दुरुस्ती)',
-            amount: 40,
-            type: 'credit',
-            status: 'cleared',
-            createdAt: '2026-10-05T17:15:00',
-          },
-          {
-            _id: 'tx_2',
-            applicationNumber: 'YD-24081',
-            applicantName: 'सुनीता पाटील',
-            serviceTitle: 'उत्पन्न दाखला',
-            amount: 30,
-            type: 'credit',
-            status: 'pending',
-            createdAt: '2026-10-06T10:30:00',
-          },
-          {
-            _id: 'tx_3',
-            applicationNumber: '',
-            applicantName: '',
-            serviceTitle: 'UPI विड्रॉल (rahulshinde@okaxis)',
-            amount: 500,
-            type: 'withdrawal',
-            status: 'cleared',
-            createdAt: '2026-09-28T14:00:00',
-          },
-        ],
-      },
-    }));
+    return fetchSafe('/wallet/overview', {}, () => {
+      let savedUser = null;
+      try {
+        const raw = localStorage.getItem('yojanadut_user');
+        if (raw) savedUser = JSON.parse(raw);
+      } catch (e) {}
+      return {
+        success: true,
+        data: {
+          availableBalance: savedUser?.walletBalance || 0,
+          pendingBalance: savedUser?.pendingBalance || 0,
+          clearedTotal: savedUser?.totalEarned || 0,
+          withdrawnTotal: 0,
+          agentName: savedUser?.name || '',
+          referralCode: savedUser?.referralCode || (savedUser?.phone ? `YD-${savedUser.phone.slice(-4)}` : ''),
+          transactions: [],
+        },
+      };
+    });
   },
 
   requestWithdrawal: async (payload) => {
@@ -877,7 +485,7 @@ export const api = {
       return {
         success: true,
         message: 'विड्रॉल विनंती नोंदवली गेली! २४ तासांत रक्कम जमा होईल.',
-        newBalance: 455 - (Number(payload.amount) || 100),
+        newBalance: 0,
       };
     }
   },
@@ -886,8 +494,8 @@ export const api = {
   getNotices: async () => {
     return fetchSafe('/notices', {}, () => ({
       success: true,
-      count: fallbackNotices.length,
-      notices: fallbackNotices,
+      count: 0,
+      notices: [],
     }));
   },
 
@@ -939,19 +547,63 @@ export const api = {
         const isAgent = role === 'agent';
         const user = {
           id: `usr_${phone}`,
-          name: name || (isAgent ? 'राहुल शिंदे (योजना दूत)' : 'सुनीता बाळू पाटील (नागरिक)'),
+          name: name || (isAgent ? 'योजना दूत' : 'नागरिक'),
           phone,
           role,
-          walletBalance: isAgent ? 455 : 0,
-          pendingBalance: isAgent ? 50 : 0,
-          totalEarned: isAgent ? 1240 : 0,
-          referralCode: isAgent ? 'YD-RAHUL100' : '',
+          walletBalance: 0,
+          pendingBalance: 0,
+          totalEarned: 0,
+          referralCode: isAgent ? `YD-${phone.slice(-4)}` : '',
         };
-        localStorage.setItem('yojanadut_token', `token_${Date.now()}`);
+        const token = `token_${Date.now()}`;
+        localStorage.setItem('yojanadut_token', token);
         sessionStorage.removeItem(`otp_${phone}`);
-        return { success: true, message: 'लॉगिन यशस्वी!', user, token: `token_${Date.now()}` };
+        return { success: true, message: 'लॉगिन यशस्वी!', user, token };
       }
       return { success: false, message: 'प्रविष्ट केलेला OTP चुकीचा आहे. कृपया पुन्हा तपासा.' };
+    }
+  },
+
+  // Registration
+  register: async (userData) => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: defaultHeaders(),
+        body: JSON.stringify(userData),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.token) localStorage.setItem('yojanadut_token', data.token);
+        return data;
+      }
+      return {
+        success: false,
+        message: data.message || 'नोंदणी अयशस्वी झाली. कृपया माहिती तपासा.',
+      };
+    } catch (err) {
+      // Local client fallback
+      const cleanPhone = (userData.phone || '').trim().replace(/\D/g, '');
+      const user = {
+        _id: `usr_${cleanPhone || Date.now()}`,
+        id: `usr_${cleanPhone || Date.now()}`,
+        name: userData.name || 'नवीन वापरकर्ता',
+        phone: cleanPhone,
+        email: userData.email || `${cleanPhone}@yojanadut.in`,
+        role: userData.role || 'user',
+        referralCode: userData.role === 'agent' ? `YD-${cleanPhone.slice(-4)}` : '',
+        walletBalance: 0,
+        pendingBalance: 0,
+        totalEarned: 0,
+      };
+      const token = `token_${Date.now()}`;
+      localStorage.setItem('yojanadut_token', token);
+      return {
+        success: true,
+        message: 'नोंदणी यशस्वी झाली! स्वागत आहे.',
+        token,
+        user,
+      };
     }
   },
 
@@ -963,26 +615,17 @@ export const api = {
         headers: defaultHeaders(),
         body: JSON.stringify(credentials),
       });
-      if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem('yojanadut_token', data.token);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.token) localStorage.setItem('yojanadut_token', data.token);
         return data;
       }
-      throw new Error('Login failed');
-    } catch {
-      // Mock demo user login
-      const mockUser = {
-        id: credentials.role === 'admin' ? 'usr_admin' : 'usr_agent_rahul',
-        name: credentials.role === 'admin' ? 'प्रशासक (Admin)' : 'राहुल शिंदे',
-        phone: credentials.phone || '9822012345',
-        role: credentials.role || 'agent',
-        referralCode: 'YD-RAHUL100',
-        walletBalance: 455,
-        pendingBalance: 50,
-        totalEarned: 1240,
+      return {
+        success: false,
+        message: data.message || 'लॉगिन अयशस्वी. कृपया मोबाईल नंबर व पासवर्ड तपासा.',
       };
-      localStorage.setItem('yojanadut_token', 'mock_jwt_token_123');
-      return { success: true, user: mockUser, token: 'mock_jwt_token_123' };
+    } catch (err) {
+      return { success: false, message: err.message || 'लॉगिन अयशस्वी.' };
     }
   },
 };

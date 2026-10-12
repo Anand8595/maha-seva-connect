@@ -1,9 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { WhatsAppIcon, Bell, ArrowRight, HelpCircle } from '../common/Icons';
 import { useLanguage } from '../../context/LanguageContext';
+import { api } from '../../services/api';
 
-export const NoticesAndHelpWidget = ({ notices = [], onOpenWhatsApp }) => {
+export const NoticesAndHelpWidget = ({ notices: initialNotices = [], onOpenWhatsApp }) => {
   const { t } = useLanguage();
+  const [noticesList, setNoticesList] = useState(initialNotices);
+
+  useEffect(() => {
+    if (initialNotices && initialNotices.length > 0) {
+      setNoticesList(initialNotices);
+    } else {
+      api.getNotices()
+        .then((res) => {
+          if (res && res.notices) setNoticesList(res.notices);
+        })
+        .catch(() => {});
+    }
+  }, [initialNotices]);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -19,41 +33,27 @@ export const NoticesAndHelpWidget = ({ notices = [], onOpenWhatsApp }) => {
           </div>
 
           <div className="space-y-4">
-            {/* Notice 1 */}
-            <div className="p-3.5 rounded-2xl bg-orange-50/50 border border-orange-100 flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-orange-100 text-[#EA580C]">
-                  {t('नवीन', 'NEW')}
-                </span>
-                <span className="font-bold text-sm text-stone-900">
-                  {t('शेतकरी ओळखपत्र नोंदणी सुरू', 'Farmer ID Registration Open')}
-                </span>
+            {noticesList.length === 0 ? (
+              <div className="py-6 text-center text-xs text-stone-400">
+                {t('सध्या कोणतीही नवीन सूचना नाही.', 'No notices available at this moment.')}
               </div>
-              <p className="text-xs text-stone-600 pl-1 mt-0.5 leading-relaxed">
-                {t(
-                  'Farmer ID नोंदणीसाठी ७/१२ व आधार लिंक मोबाइल तयार ठेवा.',
-                  'Keep 7/12 extract and Aadhaar linked mobile ready for Farmer ID registration.'
-                )}
-              </p>
-            </div>
-
-            {/* Notice 2 */}
-            <div className="p-3.5 rounded-2xl bg-emerald-50/50 border border-emerald-100 flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-[#064E3B]">
-                  {t('ऑफर', 'OFFER')}
-                </span>
-                <span className="font-bold text-sm text-stone-900">
-                  {t('दिवाळी रेफरल बोनस', 'Diwali Referral Bonus')}
-                </span>
-              </div>
-              <p className="text-xs text-stone-600 pl-1 mt-0.5 leading-relaxed">
-                {t(
-                  'प्रत्येक ३ यशस्वी अर्जांमागे अतिरिक्त ₹१०० बोनस थेट वॉलेटमध्ये.',
-                  'Extra Rs. 100 bonus on every 3 completed referral applications directly into your wallet.'
-                )}
-              </p>
-            </div>
+            ) : (
+              noticesList.map((n) => (
+                <div key={n._id} className="p-3.5 rounded-2xl bg-orange-50/50 border border-orange-100 flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-orange-100 text-[#EA580C]">
+                      {n.tag || t('सूचना', 'NOTICE')}
+                    </span>
+                    <span className="font-bold text-sm text-stone-900">
+                      {n.marathiTitle || n.title}
+                    </span>
+                  </div>
+                  <p className="text-xs text-stone-600 pl-1 mt-0.5 leading-relaxed">
+                    {n.contentMarathi || n.content || ''}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

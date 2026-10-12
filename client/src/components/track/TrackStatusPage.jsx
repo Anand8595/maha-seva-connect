@@ -1,43 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Check, AlertCircle, Upload, CheckCircle2, FileText, ArrowRight, X } from '../common/Icons';
+import { Search, Check, AlertCircle, Upload, CheckCircle2, FileText, ArrowRight, X, User, Eye, Download } from '../common/Icons';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 
 export const TrackStatusPage = ({ initialQuery = '' }) => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploadModalApp, setUploadModalApp] = useState(null);
   const [missingDocFile, setMissingDocFile] = useState(null);
   const [uploadSuccessMessage, setUploadSuccessMessage] = useState('');
+  const [previewCertDoc, setPreviewCertDoc] = useState(null);
 
   const loadApplications = async (query = '') => {
     setLoading(true);
     try {
-      const res = await api.trackApplications(query);
+      let targetQuery = query;
+      if (!targetQuery && user?.phone) {
+        targetQuery = `phone:${user.phone}`;
+      }
+      if (!targetQuery) {
+        setApplications([]);
+        setLoading(false);
+        return;
+      }
+      const res = await api.trackApplications(targetQuery);
       if (res && res.applications) {
         setApplications(res.applications);
+      } else {
+        setApplications([]);
       }
     } catch (err) {
       console.error(err);
+      setApplications([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadApplications(initialQuery);
-  }, [initialQuery]);
+    if (initialQuery) {
+      setSearchQuery(initialQuery);
+      loadApplications(initialQuery);
+    } else if (user?.phone) {
+      loadApplications('');
+    } else {
+      setApplications([]);
+    }
+  }, [initialQuery, user?.phone]);
 
   const handleSearch = (e) => {
     e?.preventDefault();
+    if (!searchQuery.trim()) {
+      if (user?.phone) {
+        loadApplications('');
+      } else {
+        setApplications([]);
+      }
+      return;
+    }
     loadApplications(searchQuery);
-  };
-
-  const handleQuickDemoClick = (demoId) => {
-    setSearchQuery(demoId);
-    loadApplications(demoId);
   };
 
   const handleReuploadSubmit = async (e) => {
@@ -110,50 +135,58 @@ export const TrackStatusPage = ({ initialQuery = '' }) => {
         </div>
       </form>
 
-      {/* Demo Quick Click Chips */}
-      <div className="flex items-center gap-2 mb-8 text-xs text-stone-500 flex-wrap">
-        <span className="font-medium text-stone-600">{t('Demo: अलीकडील अर्ज', 'Demo: Recent applications')}:</span>
-        <button
-          onClick={() => handleQuickDemoClick('YD-24081')}
-          className="bg-stone-200/70 hover:bg-stone-300 px-2.5 py-1 rounded-md text-stone-800 font-mono text-xs transition"
-        >
-          YD-24081
-        </button>
-        <button
-          onClick={() => handleQuickDemoClick('YD-24077')}
-          className="bg-stone-200/70 hover:bg-stone-300 px-2.5 py-1 rounded-md text-stone-800 font-mono text-xs transition"
-        >
-          YD-24077
-        </button>
-        <button
-          onClick={() => handleQuickDemoClick('YD-24072')}
-          className="bg-stone-200/70 hover:bg-stone-300 px-2.5 py-1 rounded-md text-stone-800 font-mono text-xs transition"
-        >
-          YD-24072
-        </button>
-        <button
-          onClick={() => handleQuickDemoClick('all')}
-          className="text-[#064E3B] hover:underline font-semibold ml-1"
-        >
-          {t('सर्व दाखवा', 'Show all')}
-        </button>
-      </div>
-
       {/* Applications List */}
-      <div className="space-y-6">
+      <div className="space-y-6 mt-6">
+        {user && !searchQuery && applications.length > 0 && (
+          <div className="flex items-center justify-between bg-emerald-50/80 border border-emerald-200 px-4 py-2.5 rounded-2xl text-xs">
+            <div className="flex items-center gap-2 text-[#064E3B] font-bold">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>{t(`माझे अर्ज (${applications.length})`, `My Applications (${applications.length})`)}:</span>
+              <span className="text-stone-700 font-semibold">{user.name} ({user.phone})</span>
+            </div>
+            <span className="text-[11px] font-semibold text-emerald-800 bg-white px-2.5 py-0.5 rounded-full border border-emerald-200">
+              {user.role === 'agent' ? 'योजना दूत खाते' : 'नागरिक खाते'}
+            </span>
+          </div>
+        )}
+
         {loading ? (
           <div className="text-center py-12 text-stone-400">
             {t('माहिती शोधत आहे...', 'Loading tracking details...')}
           </div>
         ) : applications.length === 0 ? (
           <div className="bg-white rounded-2xl p-10 text-center border border-stone-200">
-            <AlertCircle className="w-10 h-10 text-stone-400 mx-auto mb-2" />
-            <p className="text-base font-bold text-stone-700">
-              {t('कोणताही अर्ज सापडला नाही', 'No application found')}
-            </p>
-            <p className="text-xs text-stone-500 mt-1">
-              {t('कृपया योग्य अर्ज क्रमांक किंवा मोबाईल क्रमांक प्रविष्ट करा.', 'Please check the application ID or mobile number.')}
-            </p>
+            {searchQuery ? (
+              <>
+                <AlertCircle className="w-10 h-10 text-stone-400 mx-auto mb-2" />
+                <p className="text-base font-bold text-stone-700">
+                  {t('कोणताही अर्ज सापडला नाही', 'No application found')}
+                </p>
+                <p className="text-xs text-stone-500 mt-1">
+                  {t('कृपया योग्य अर्ज क्रमांक किंवा मोबाईल क्रमांक प्रविष्ट करा.', 'Please check the application ID or mobile number.')}
+                </p>
+              </>
+            ) : user ? (
+              <>
+                <FileText className="w-10 h-10 text-stone-400 mx-auto mb-2" />
+                <p className="text-base font-bold text-stone-700">
+                  {t('तुमच्या खात्यावर अद्याप कोणताही अर्ज नाही', 'No applications on this account yet')}
+                </p>
+                <p className="text-xs text-stone-500 mt-1">
+                  {t(`मोबाईल: ${user.phone} – नवीन सेवेसाठी अर्ज करा.`, `Mobile: ${user.phone} – Apply for a service to view progress here.`)}
+                </p>
+              </>
+            ) : (
+              <>
+                <Search className="w-10 h-10 text-[#064E3B]/60 mx-auto mb-2" />
+                <p className="text-base font-bold text-stone-700">
+                  {t('अर्ज स्थिती तपासण्यासाठी वर शोध घ्या', 'Search above to track application status')}
+                </p>
+                <p className="text-xs text-stone-500 mt-1">
+                  {t('तुमचा अर्ज क्रमांक (उदा. YD-12345) किंवा नोंदणीकृत मोबाईल क्रमांक प्रविष्ट करा.', 'Enter your application ID (e.g. YD-12345) or registered mobile number.')}
+                </p>
+              </>
+            )}
           </div>
         ) : (
           applications.map((app) => {
@@ -280,6 +313,74 @@ export const TrackStatusPage = ({ initialQuery = '' }) => {
                   </div>
                 )}
 
+                {/* Official Issued Certificates & Documents Received from Admin */}
+                {((app.issuedDocs && app.issuedDocs.length > 0) || (app.deliveredDocuments && app.deliveredDocuments.length > 0)) && (
+                  <div className="mt-4 p-4 bg-gradient-to-r from-emerald-50 via-teal-50/70 to-emerald-50 border-2 border-emerald-500/40 rounded-2xl shadow-xs">
+                    <div className="flex items-start sm:items-center justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-2xl">🏆</span>
+                        <div>
+                          <h4 className="text-sm font-black text-emerald-950">
+                            {t('कार्यालयाकडून जारी केलेले अधिकृत प्रमाणपत्र / दाखला', 'Official Certificate / Document Issued')}
+                          </h4>
+                          <p className="text-[11px] text-emerald-700">
+                            {t('प्रशासकाने आपला अधिकृत दाखला जारी केला आहे. खाली दिलेल्या बटनावरून पहा किंवा डाऊनलोड करा.', 'Admin has issued your official document. View or download below.')}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-600 text-white shadow-xs shrink-0">
+                        {t('अधिकृत प्रत तयार', 'Official Copy Ready')}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {((app.issuedDocs && app.issuedDocs.length > 0) ? app.issuedDocs : app.deliveredDocuments).map((doc, dIdx) => (
+                        <div
+                          key={dIdx}
+                          className="p-3 bg-white border border-emerald-200 rounded-xl flex items-center justify-between gap-3 shadow-xs hover:border-emerald-400 transition"
+                        >
+                          <div className="min-w-0 flex items-center gap-2.5">
+                            <span className="text-xl shrink-0">📜</span>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-stone-900 truncate">
+                                {doc.name || t('अधिकृत प्रमाणपत्र', 'Official Certificate')}
+                              </p>
+                              <p className="text-[10px] text-stone-500">
+                                {doc.size ? `${doc.size} • ` : ''}
+                                {t('जारी तारीख', 'Issued')}: {doc.issuedAt ? new Date(doc.issuedAt).toLocaleDateString('mr-IN') : t('आज', 'Today')}
+                                {doc.note ? ` • "${doc.note}"` : ''}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setPreviewCertDoc(doc)}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs transition flex items-center gap-1 shadow-2xs"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>{t('पहा', 'View')}</span>
+                            </button>
+                            {doc.url && (
+                              <a
+                                href={doc.url}
+                                download={doc.name || 'official_document'}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition shadow-xs flex items-center gap-1"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                                <span>{t('डाऊनलोड', 'Download')}</span>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Status description note */}
                 {app.statusNote && !isActionNeeded && (
                   <div className="mt-3 text-xs text-stone-500 bg-stone-50 p-2.5 rounded-lg border border-stone-100">
@@ -356,6 +457,93 @@ export const TrackStatusPage = ({ initialQuery = '' }) => {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Official Certificate Preview Modal */}
+      {previewCertDoc && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl relative max-h-[90vh] flex flex-col animate-scaleUp">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-stone-200 mb-4">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="text-2xl shrink-0">
+                  {previewCertDoc.url?.startsWith('data:image/') || previewCertDoc.name?.match(/\.(jpg|jpeg|png|webp|svg)$/i)
+                    ? '🖼️'
+                    : '📜'}
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-base font-black text-stone-900 truncate">
+                    {previewCertDoc.name || t('अधिकृत प्रमाणपत्र', 'Official Certificate')}
+                  </h3>
+                  <p className="text-xs text-emerald-700 font-medium">
+                    {t('महाराष्ट्र शासन ई-सेवा कक्षाकडून जारी अधिकृत प्रत', 'Issued by Maharashtra Govt e-Seva Desk')}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPreviewCertDoc(null)}
+                className="p-1.5 rounded-full text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Document Content / Actual Preview */}
+            <div className="flex-1 overflow-auto bg-stone-100 rounded-2xl p-3 sm:p-4 flex items-center justify-center min-h-[300px]">
+              {previewCertDoc.url && (previewCertDoc.url.startsWith('data:image/') || previewCertDoc.name?.match(/\.(jpg|jpeg|png|webp|svg)$/i)) ? (
+                <img
+                  src={previewCertDoc.url}
+                  alt={previewCertDoc.name}
+                  className="max-h-[60vh] max-w-full rounded-xl object-contain shadow-md mx-auto"
+                />
+              ) : previewCertDoc.url && previewCertDoc.url.startsWith('data:application/pdf') ? (
+                <iframe
+                  src={previewCertDoc.url}
+                  title={previewCertDoc.name}
+                  className="w-full h-[55vh] rounded-xl border border-stone-300"
+                />
+              ) : (
+                <div className="text-center p-8 space-y-3">
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto text-2xl font-bold">
+                    📜
+                  </div>
+                  <h4 className="text-sm font-bold text-stone-800">{previewCertDoc.name}</h4>
+                  <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                    {previewCertDoc.note || t('अधिकृत दाखला तयार झाला आहे. खालील डाऊनलोड बटणावर क्लिक करून सुरक्षित जतन करा.', 'Official certificate ready. Download below.')}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between pt-4 border-t border-stone-200 mt-4">
+              <span className="text-xs text-stone-500">
+                {t('दस्तऐवज स्थिती: ', 'Document Status: ')}<strong className="text-emerald-700 font-bold">{t('अधिकृत व वैध (Verified)', 'Verified & Valid')}</strong>
+              </span>
+              <div className="flex items-center gap-2">
+                {previewCertDoc.url && (
+                  <a
+                    href={previewCertDoc.url}
+                    download={previewCertDoc.name || 'official_certificate'}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>{t('डाउनलोड करा (Download)', 'Download')}</span>
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setPreviewCertDoc(null)}
+                  className="px-4 py-2 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs transition"
+                >
+                  {t('बंद करा (Close)', 'Close')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

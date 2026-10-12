@@ -17,12 +17,12 @@ export const WalletPage = ({ onOpenWithdrawModal }) => {
       }
     };
     fetchWallet();
-  }, []);
+  }, [user?.id, user?.phone]);
 
-  const balance = user?.walletBalance !== undefined ? user.walletBalance : (walletData?.availableBalance || 455);
-  const pending = user?.pendingBalance !== undefined ? user.pendingBalance : (walletData?.pendingBalance || 50);
-  const cleared = user?.totalEarned !== undefined ? user.totalEarned : (walletData?.clearedTotal || 1240);
-  const withdrawn = walletData?.withdrawnTotal || 500;
+  const balance = user?.walletBalance !== undefined ? user.walletBalance : (walletData?.availableBalance || 0);
+  const pending = user?.pendingBalance !== undefined ? user.pendingBalance : (walletData?.pendingBalance || 0);
+  const cleared = user?.totalEarned !== undefined ? user.totalEarned : (walletData?.clearedTotal || 0);
+  const withdrawn = walletData?.withdrawnTotal || 0;
   const transactions = walletData?.transactions || [];
 
   return (
@@ -93,11 +93,18 @@ export const WalletPage = ({ onOpenWithdrawModal }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 text-stone-700">
-              {transactions.map((t) => (
-                <tr key={t._id} className="hover:bg-stone-50 transition">
-                  <td className="py-3 px-2 font-bold text-stone-900">
-                    {t.type === 'credit' ? 'रेफरल कमिशन' : 'विड्रॉल पेआउट'}
+              {transactions.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="py-8 text-center text-stone-400">
+                    {t('कोणतेही व्यवहार उपलब्ध नाहीत.', 'No transactions available.')}
                   </td>
+                </tr>
+              ) : (
+                transactions.map((t) => (
+                  <tr key={t._id} className="hover:bg-stone-50 transition">
+                    <td className="py-3 px-2 font-bold text-stone-900">
+                      {t.type === 'credit' ? 'रेफरल कमिशन' : 'विड्रॉल पेआउट'}
+                    </td>
                   <td className="py-3 px-2 text-stone-600">
                     {t.serviceTitle} {t.applicationNumber && `(${t.applicationNumber})`}
                   </td>
@@ -121,7 +128,7 @@ export const WalletPage = ({ onOpenWithdrawModal }) => {
                     </span>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

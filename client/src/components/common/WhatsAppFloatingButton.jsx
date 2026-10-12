@@ -7,6 +7,10 @@ export const WhatsAppFloatingButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [customMsg, setCustomMsg] = useState('');
 
+  const whatsappUrl = import.meta.env.VITE_WHATSAPP_LINK || 'https://chat.whatsapp.com/CPGUrVqOf2I4ZzsvBivj6e?s=sw&p=a&mlu=4&ilr=4';
+  const contactPhone = import.meta.env.VITE_CONTACT_PHONE || '9579224223';
+  const contactEmail = import.meta.env.VITE_CONTACT_EMAIL || 'sanviinfotechcsc@gmail.com';
+
   const quickQuestions = [
     'पॅन कार्डसाठी कोणती कागदपत्रे लागतात?',
     'माझा अर्ज क्र. कसा शोधायचा?',
@@ -14,9 +18,8 @@ export const WhatsAppFloatingButton = () => {
     'योजना दूत बनून कमिशन कसे मिळवायचे?',
   ];
 
-  const handleSendToWhatsApp = (text) => {
-    const message = encodeURIComponent(text || customMsg || 'नमस्कार YojanaDut टीम! मला सरकारी कागदपत्रे सेवेबद्दल माहिती हवी आहे.');
-    window.open(`https://api.whatsapp.com/send?phone=919822012345&text=${message}`, '_blank');
+  const handleSendToWhatsApp = () => {
+    window.open(whatsappUrl, '_blank');
     setIsOpen(false);
   };
 
@@ -33,8 +36,8 @@ export const WhatsAppFloatingButton = () => {
                 <WhatsAppIcon className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h4 className="font-bold text-sm leading-tight">YojanaDut WhatsApp Support</h4>
-                <span className="text-[11px] text-emerald-200">सकाळी ९ ते संध्या. ७ उपलब्ध</span>
+                <h4 className="font-bold text-sm leading-tight">Sanvi Infotech WhatsApp Group</h4>
+                <span className="text-[11px] text-emerald-200">मोबाईल: +91 {contactPhone}</span>
               </div>
             </div>
             <button
@@ -63,22 +66,19 @@ export const WhatsAppFloatingButton = () => {
               ))}
             </div>
 
-            {/* Custom Input */}
-            <div className="pt-2 flex gap-1.5">
-              <input
-                type="text"
-                value={customMsg}
-                onChange={(e) => setCustomMsg(e.target.value)}
-                placeholder="येथे संदेश टाईप करा..."
-                className="flex-1 px-3 py-2 text-xs rounded-xl border border-stone-300 focus:outline-none focus:ring-1 focus:ring-emerald-700 bg-white"
-                onKeyDown={(e) => e.key === 'Enter' && handleSendToWhatsApp(customMsg)}
-              />
+            {/* Direct Join WhatsApp Group CTA */}
+            <div className="pt-2 space-y-2">
               <button
-                onClick={() => handleSendToWhatsApp(customMsg)}
-                className="bg-[#25D366] hover:bg-[#20ba59] text-white px-3 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center shadow-xs"
+                type="button"
+                onClick={handleSendToWhatsApp}
+                className="w-full bg-[#25D366] hover:bg-[#20ba59] text-white py-2.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm"
               >
-                <Send className="w-4 h-4" />
+                <WhatsAppIcon className="w-4 h-4 text-white" />
+                <span>ग्रुप जॉइन करा (Join WhatsApp Group)</span>
               </button>
+              <div className="text-[11px] text-center text-stone-500 font-mono">
+                📞 +91 {contactPhone} • ✉️ {contactEmail}
+              </div>
             </div>
           </div>
 

@@ -1,15 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Gift, Wallet, Clock, ShieldCheck, ArrowRight, User as UserIcon } from '../common/Icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
+import { api } from '../../services/api';
 
 export const ReferralAndWalletSection = ({ onOpenAgentPage, onOpenWalletPage }) => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const [walletData, setWalletData] = useState(null);
 
-  const balance = user?.walletBalance !== undefined ? user.walletBalance : 455;
-  const pending = user?.pendingBalance !== undefined ? user.pendingBalance : 50;
-  const cleared = user?.totalEarned !== undefined ? user.totalEarned : 1240;
+  useEffect(() => {
+    if (!user) {
+      setWalletData(null);
+      return;
+    }
+    const fetchWallet = async () => {
+      try {
+        const res = await api.getWalletOverview();
+        if (res && res.data) {
+          setWalletData(res.data);
+        }
+      } catch (e) {}
+    };
+    fetchWallet();
+
+    const handleStorage = (e) => {
+      if (e.key === 'yojanadut_user') {
+        fetchWallet();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [user?._id, user?.id, user?.phone, user?.walletBalance, user?.totalEarned]);
+
+  const balance = walletData?.availableBalance !== undefined ? walletData.availableBalance : (user?.walletBalance || 0);
+  const pending = walletData?.pendingBalance !== undefined ? walletData.pendingBalance : (user?.pendingBalance || 0);
+  const cleared = walletData?.clearedTotal !== undefined ? walletData.clearedTotal : (user?.totalEarned || 0);
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -87,7 +113,7 @@ export const ReferralAndWalletSection = ({ onOpenAgentPage, onOpenWalletPage }) 
                     ₹{balance}
                   </div>
                   <span className="inline-block mt-2 text-[11px] text-emerald-300/90 font-medium">
-                    {user?.name ? `${user.name} – खाते` : 'Demo खाते – राहुल शिंदे'}
+                    {user?.name ? `${user.name} – खाते` : t('लॉगिन करा', 'Login to view account')}
                   </span>
                 </div>
                 <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">

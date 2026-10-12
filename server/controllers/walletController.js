@@ -4,10 +4,15 @@ import { memoryStore, getIsMongoConnected } from '../config/db.js';
 
 export const getWalletOverview = async (req, res) => {
   try {
-    const agentId = req.user._id;
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'लॉगिन आवश्यक आहे.' });
+    }
+
+    const agentId = user._id;
 
     if (getIsMongoConnected()) {
-      const user = await User.findById(agentId);
+      const dbUser = await User.findById(agentId);
       const transactions = await WalletTransaction.find({ agentId }).sort({ createdAt: -1 });
 
       const pendingBalance = transactions
@@ -22,7 +27,7 @@ export const getWalletOverview = async (req, res) => {
         .filter((t) => t.type === 'withdrawal' && t.status === 'cleared')
         .reduce((sum, t) => sum + t.amount, 0);
 
-      const availableBalance = user.walletBalance || (clearedTotal - withdrawnTotal);
+      const availableBalance = dbUser?.walletBalance || 0;
 
       return res.json({
         success: true,
@@ -31,15 +36,19 @@ export const getWalletOverview = async (req, res) => {
           pendingBalance,
           clearedTotal,
           withdrawnTotal,
-          agentName: user.name,
-          referralCode: user.referralCode,
+          agentName: dbUser?.name || user.name,
+          referralCode: dbUser?.referralCode || user.referralCode || (user.phone ? `YD-${user.phone.slice(-4)}` : ''),
           transactions,
         },
       });
     } else {
-      const user = memoryStore.users.find((u) => String(u._id) === String(agentId)) || memoryStore.users[1]; // fallback to Rahul
+      const currentUser = memoryStore.users.find(
+        (u) => String(u._id) === String(agentId) || (user.phone && u.phone === user.phone)
+      ) || user;
+
+      // Filter transactions ONLY for this specific user
       const txs = memoryStore.walletTransactions.filter(
-        (t) => String(t.agentId) === String(user._id) || String(t.agentId) === 'usr_agent_rahul'
+        (t) => String(t.agentId) === String(currentUser._id) || (currentUser.phone && String(t.agentId) === String(currentUser.phone))
       );
 
       const pendingBalance = txs
@@ -54,15 +63,19 @@ export const getWalletOverview = async (req, res) => {
         .filter((t) => t.type === 'withdrawal' && t.status === 'cleared')
         .reduce((sum, t) => sum + t.amount, 0);
 
+      const availableBalance = currentUser.walletBalance !== undefined 
+        ? currentUser.walletBalance 
+        : Math.max(0, clearedTotal - withdrawnTotal);
+
       return res.json({
         success: true,
         data: {
-          availableBalance: user.walletBalance !== undefined ? user.walletBalance : 455,
-          pendingBalance: user.pendingBalance !== undefined ? user.pendingBalance : 50,
-          clearedTotal: user.totalEarned !== undefined ? user.totalEarned : 1240,
+          availableBalance: Math.max(0, availableBalance),
+          pendingBalance: currentUser.pendingBalance !== undefined ? currentUser.pendingBalance : pendingBalance,
+          clearedTotal: currentUser.totalEarned !== undefined ? currentUser.totalEarned : clearedTotal,
           withdrawnTotal,
-          agentName: user.name,
-          referralCode: user.referralCode || 'YD-RAHUL100',
+          agentName: currentUser.name || (currentUser.phone ? `नागरिक (${currentUser.phone})` : ''),
+          referralCode: currentUser.referralCode || (currentUser.phone ? `YD-${currentUser.phone.slice(-4)}` : ''),
           transactions: txs,
         },
       });

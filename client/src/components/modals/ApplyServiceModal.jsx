@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { X, Upload, CheckCircle2, FileText, AlertCircle, ArrowRight } from '../common/Icons';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import { api, fallbackServices } from '../../services/api';
 
 export const ApplyServiceModal = ({ initialService, isOpen, onClose, onSuccess }) => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [services, setServices] = useState(fallbackServices);
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [fullName, setFullName] = useState('');
@@ -24,26 +26,52 @@ export const ApplyServiceModal = ({ initialService, isOpen, onClose, onSuccess }
     const ref = params.get('ref');
     if (ref) setReferralCode(ref);
 
+    if (user) {
+      if (user.name && !user.name.startsWith('नागरिक (') && !user.name.startsWith('योजना दूत (')) {
+        setFullName((prev) => prev || user.name);
+      }
+      if (user.phone) {
+        setPhone((prev) => prev || user.phone);
+      }
+      if (user.email) {
+        setEmail((prev) => prev || user.email);
+      }
+    }
+
     if (initialService) {
       setSelectedServiceId(initialService._id || initialService.slug);
     } else if (fallbackServices.length > 0) {
       setSelectedServiceId(fallbackServices[0]._id);
     }
-  }, [initialService, isOpen]);
+  }, [initialService, isOpen, user]);
 
   if (!isOpen) return null;
 
   const currentService = services.find((s) => s._id === selectedServiceId || s.slug === selectedServiceId) || services[0];
 
   const handleFileChange = (e) => {
-    if (e.target.files) {
-      const filesArray = Array.from(e.target.files).map((f) => ({
-        name: f.name,
-        docType: f.name.split('.')[0] || 'दस्तावेज',
-        url: `/uploads/${f.name}`,
-      }));
-      setUploadedFiles((prev) => [...prev, ...filesArray]);
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (uploadEvent) => {
+          const fileData = {
+            name: file.name,
+            docType: file.name.split('.')[0] || 'दस्तावेज',
+            url: uploadEvent.target.result, // Real Base64 Data URL for viewing & downloading
+            size: (file.size / 1024).toFixed(1) + ' KB',
+            type: file.type || 'application/octet-stream',
+            uploadedAt: new Date().toISOString(),
+          };
+          setUploadedFiles((prev) => [...prev, fileData]);
+        };
+        reader.readAsDataURL(file);
+      });
     }
+  };
+
+  const removeFile = (indexToRemove) => {
+    setUploadedFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleSubmit = async (e) => {
@@ -56,8 +84,14 @@ export const ApplyServiceModal = ({ initialService, isOpen, onClose, onSuccess }
     setSubmitting(true);
     try {
       const payload = {
+        userId: user?.id || user?._id || null,
         serviceId: currentService._id || currentService.slug,
-        serviceTitle: currentService.marathiTitle,
+        serviceTitle: currentService.marathiTitle || currentService.title,
+        slug: currentService.slug,
+        category: currentService.category,
+        categoryMarathi: currentService.categoryMarathi,
+        basePrice: currentService.basePrice,
+        agentCommission: currentService.agentCommission,
         applicantDetails: {
           fullName,
           phone,
@@ -67,14 +101,26 @@ export const ApplyServiceModal = ({ initialService, isOpen, onClose, onSuccess }
           village,
         },
         referralCode: referralCode.trim(),
-        uploadedDocs: uploadedFiles.length > 0 ? uploadedFiles : [
-          { docType: 'आधार कार्ड', name: 'aadhaar_card.pdf', url: '/demo-docs/aadhaar.pdf' },
-        ],
+        uploadedDocs: uploadedFiles,
+        uploadedDocuments: uploadedFiles,
       };
 
       const res = await api.createApplication(payload);
       if (res && res.application) {
         setSubmittedApp(res.application);
+        try {
+          localStorage.setItem('yojanadut_last_app_submitted', JSON.stringify({
+            app: res.application,
+            timestamp: Date.now(),
+          }));
+          if (typeof BroadcastChannel !== 'undefined') {
+            const bc = new BroadcastChannel('yojanadut_sync');
+            bc.postMessage({ type: 'NEW_APPLICATION', application: res.application });
+            bc.close();
+          }
+        } catch (e) {
+          // Ignore
+        }
       }
     } catch (err) {
       console.error(err);
@@ -266,8 +312,20 @@ export const ApplyServiceModal = ({ initialService, isOpen, onClose, onSuccess }
               {uploadedFiles.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {uploadedFiles.map((f, i) => (
-                    <span key={i} className="text-[11px] bg-emerald-50 text-[#064E3B] px-2 py-0.5 rounded-md border border-emerald-200">
-                      ✓ {f.name}
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 text-[11px] bg-emerald-50 text-[#064E3B] px-2.5 py-1 rounded-lg border border-emerald-200"
+                    >
+                      <span className="truncate max-w-[160px]">✓ {f.name}</span>
+                      {f.size && <span className="text-[10px] text-emerald-600/70">({f.size})</span>}
+                      <button
+                        type="button"
+                        onClick={() => removeFile(i)}
+                        className="text-stone-400 hover:text-rose-600 font-bold ml-1 text-sm leading-none"
+                        title="काढून टाका"
+                      >
+                        ×
+                      </button>
                     </span>
                   ))}
                 </div>

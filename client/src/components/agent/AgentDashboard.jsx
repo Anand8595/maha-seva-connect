@@ -33,12 +33,13 @@ export const AgentDashboard = ({ onOpenWithdrawModal }) => {
       }
     };
     fetchWallet();
-  }, []);
+  }, [user?.id, user?.phone]);
 
-  const referralCode = user?.referralCode || walletData?.referralCode || 'YD-RAHUL100';
-  const referralLink = `${window.location.origin}/?ref=${referralCode}`;
+  const referralCode = user?.referralCode || walletData?.referralCode || (user?.phone ? `YD-${user.phone.slice(-4)}` : '');
+  const referralLink = referralCode ? `${window.location.origin}/?ref=${referralCode}` : window.location.origin;
 
   const copyToClipboard = (text, isCode = false) => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     if (isCode) {
       setCopiedCode(true);
@@ -50,15 +51,16 @@ export const AgentDashboard = ({ onOpenWithdrawModal }) => {
   };
 
   const shareOnWhatsApp = () => {
+    if (!referralCode) return;
     const text = encodeURIComponent(
       `नमस्कार! सरकारी कागदपत्रे जसे की पॅन कार्ड, उत्पन्न दाखला, शेतकरी ओळखपत्र घरबसल्या मिळवा. खालील लिंकवरून अर्ज करा:\n${referralLink}\nकिंवा माझा रेफरल कोड वापरा: *${referralCode}*`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
 
-  const availableBalance = user?.walletBalance !== undefined ? user.walletBalance : (walletData?.availableBalance || 455);
-  const pendingBalance = user?.pendingBalance !== undefined ? user.pendingBalance : (walletData?.pendingBalance || 50);
-  const clearedTotal = user?.totalEarned !== undefined ? user.totalEarned : (walletData?.clearedTotal || 1240);
+  const availableBalance = user?.walletBalance !== undefined ? user.walletBalance : (walletData?.availableBalance || 0);
+  const pendingBalance = user?.pendingBalance !== undefined ? user.pendingBalance : (walletData?.pendingBalance || 0);
+  const clearedTotal = user?.totalEarned !== undefined ? user.totalEarned : (walletData?.clearedTotal || 0);
 
   const transactions = walletData?.transactions || [];
   const filteredTransactions = transactions.filter((t) => {
@@ -170,7 +172,7 @@ export const AgentDashboard = ({ onOpenWithdrawModal }) => {
                 {t('रेफरल कोड', 'Referral Code')}
               </span>
               <span className="text-lg font-mono font-extrabold text-[#EA580C] tracking-wide">
-                {referralCode}
+                {referralCode || '—'}
               </span>
             </div>
             <button
