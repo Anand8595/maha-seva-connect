@@ -94,7 +94,7 @@ export const initMemoryStore = async () => {
       title: 'Income Certificate (Tahsildar)',
       marathiTitle: 'उत्पन्न दाखला',
       slug: 'income-certificate',
-      basePrice: 149,
+      basePrice: 249,
       agentCommission: 30,
     },
     applicantDetails: {
@@ -137,8 +137,8 @@ export const initMemoryStore = async () => {
       title: 'PAN Card (New / Correction)',
       marathiTitle: 'पॅन कार्ड (नवीन / दुरुस्ती)',
       slug: 'pan-card',
-      basePrice: 199,
-      agentCommission: 40,
+      basePrice: 249,
+      agentCommission: 30,
     },
     applicantDetails: {
       fullName: 'गणेश जाधव',
@@ -182,7 +182,7 @@ export const initMemoryStore = async () => {
       marathiTitle: 'शेतकरी ओळखपत्र (Farmer ID)',
       slug: 'farmer-id',
       basePrice: 99,
-      agentCommission: 25,
+      agentCommission: 30,
     },
     applicantDetails: {
       fullName: 'आशा शिंदे',
@@ -223,8 +223,8 @@ export const initMemoryStore = async () => {
       title: 'Caste Certificate',
       marathiTitle: 'जात प्रमाणपत्र',
       slug: 'caste-certificate',
-      basePrice: 249,
-      agentCommission: 50,
+      basePrice: 349,
+      agentCommission: 30,
     },
     applicantDetails: {
       fullName: 'सचिन मारुती तांबडे',
@@ -264,8 +264,8 @@ export const initMemoryStore = async () => {
       title: 'Voter ID',
       marathiTitle: 'मतदार ओळखपत्र',
       slug: 'voter-id',
-      basePrice: 99,
-      agentCommission: 20,
+      basePrice: 249,
+      agentCommission: 30,
     },
     applicantDetails: {
       fullName: 'राहुल दत्तात्रय कांबळे',

@@ -30,7 +30,6 @@ export const ServicesPage = ({
     { id: 'certificates', title: t('दाखले / प्रमाणपत्र', 'Certificates') },
     { id: 'farmer', title: t('शेतकरी सेवा', 'Farmer Services') },
     { id: 'online_govt', title: t('ऑनलाईन शासकीय सेवा', 'Online Govt. Services') },
-    { id: 'csc_partner', title: t('सायबर कॅफे / CSC', 'Cyber Cafe / CSC') },
   ];
 
   const getServiceIcon = (type, category) => {

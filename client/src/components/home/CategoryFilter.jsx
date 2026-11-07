@@ -30,12 +30,6 @@ export const CategoryFilter = ({ selectedCategory, onSelectCategory }) => {
       sub: 'Online Govt. Services',
       icon: <Globe className="w-6 h-6 text-[#0D4F45]" />,
     },
-    {
-      id: 'csc_partner',
-      title: t('सायबर कॅफे / CSC', 'Cyber Cafe / CSC'),
-      sub: 'Cyber Cafe',
-      icon: <Laptop className="w-6 h-6 text-[#0D4F45]" />,
-    },
   ];
 
   return (
@@ -46,7 +40,7 @@ export const CategoryFilter = ({ selectedCategory, onSelectCategory }) => {
         </h2>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {categories.map((cat) => {
           const isSelected = selectedCategory === cat.id;
           return (

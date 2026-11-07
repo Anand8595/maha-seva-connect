@@ -143,7 +143,7 @@ export const updateService = async (req, res) => {
       memoryStore.services[idx] = { ...memoryStore.services[idx], ...updates, updatedAt: new Date() };
       return res.json({ success: true, message: 'सेवा अद्ययावत केली गेली!', service: memoryStore.services[idx] });
     }
-  } catch (error) {
+  } catch (error) { 
     res.status(500).json({ success: false, message: error.message });
   }
 };
